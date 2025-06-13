@@ -1,0 +1,10 @@
+workspace/
+__pycache__/
+Data/
+.idea/
+.vscode/
+.git/
+*.log
+*.pyc
+/config.yaml
+/TODO.md

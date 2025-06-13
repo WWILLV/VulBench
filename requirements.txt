@@ -1,0 +1,8 @@
+openai
+requests
+beautifulsoup4
+docker
+selenium
+html2text
+pyyaml
+GitPython
