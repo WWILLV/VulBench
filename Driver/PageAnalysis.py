@@ -124,10 +124,3 @@ brief：信息仅包含漏洞的简要描述，未涉及任何利用细节或代
             return "unknown"
         logging.info(f"Response from LLM: {response}")
         return response
-
-
-
-if __name__ == '__main__':
-    page_analysis = PageAnalysis()
-    pc = page_analysis.poclink_classification("https://github.com/Netflix/lemur/security/advisories/GHSA-5fqv-mpj8-h7gm")
-    print(pc)

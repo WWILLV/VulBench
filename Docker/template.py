@@ -63,17 +63,3 @@ CMD {str(cmd).replace("'", '"')}
     """
 
     return base_dockerfile
-
-
-if __name__ == "__main__":
-    # Example usage
-    workspace = utils.get_workspace()
-    dockerfile_content = get_dockerfile(
-        py_version="3.10",
-        file_path=f"{os.path.join(workspace, 'attic')}",
-        dependencies=["vim", "curl", "patch", "git"],
-        other_commands=["python setup.py install"],
-        environment="ENV PATH=$PATH:/vrbench",
-        cmd=["/bin/bash"]
-    )
-    print(dockerfile_content)

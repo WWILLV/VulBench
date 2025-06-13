@@ -1,13 +1,11 @@
 import logging
 import os
 from typing import Any
-
 import git
 import requests
 import zipfile
 import tarfile
 import subprocess
-
 from Docker.template import get_dockerfile
 from Docker.DockerHandle import DockerHandle
 from utils import get_workspace
@@ -212,30 +210,3 @@ class Deploy:
         logging.info(f"Container {container.id} created from image {image_name}")
 
         return dockerfile_path, container
-
-
-if __name__ == "__main__":
-    deployer = Deploy()
-    path = deployer.clone("https://github.com/django/django")
-    current_commit = "55519d6cf8998fe4c8f5c8abffc2b10a7c3d14"
-    pc = deployer.get_parent_commit(repo_path=path, current_commit=current_commit)
-    deployer.checkout(path, pc)
-    dp, container = deployer.dockerfile_deploy(py_version="3.9", file_path=path, commit=pc)
-    # path = deployer.clone("https://github.com/twangboy/salt")
-    # pc = deployer.get_parent_commit(github_repo="https://github.com/twangboy/salt", current_commit="e6dd6a482a76e2c82fcc6eeb6df9030e453837")
-    # deployer.checkout(path, pc)
-    # dp, container = deployer.dockerfile_deploy(file_path=path)
-    # dp, container = deployer.dockerfile_deploy(file_path="attic")
-    logging.info(f"Container ID: {container.id}")
-    patch = f"https://github.com/django/django/commit/{current_commit}.patch"
-    deployer.download(patch, os.path.join(deployer.space_path, f"django_{current_commit}.patch"))
-    deployer.docker_handle.container_copy(container_id=container.id,
-                                       src_path=os.path.join(deployer.space_path, f"django_{current_commit}.patch"),
-                                       dest_path="/vrbench/django.patch")
-    check_command = 'awk "NR>=78 && NR<=84" django/contrib/humanize/templatetags/humanize.py'
-    output = deployer.docker_handle.container_exec(container_id=container.id, command=check_command)
-    logging.info(f"Output before patching: {output}")
-    output = deployer.docker_handle.container_exec(container_id=container.id, command="git apply /vrbench/django.patch")
-    logging.info(f"Output of patching: {output}")
-    output = deployer.docker_handle.container_exec(container_id=container.id, command=check_command)
-    logging.info(f"Output after patching: {output}")

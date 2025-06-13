@@ -100,21 +100,3 @@ class ChatGPT:
         except Exception as e:
             logging.error(f"Error processing response: {e}")
             return None
-
-
-# 测试代码
-if __name__ == "__main__":
-    chatbot = ChatGPT(system_prompt="You are a helpful assistant named VRBench, a tool for vulnerability repair benchmark.")
-
-    if chatbot.stream:
-        print("使用流式输出:")
-        for text_chunk in chatbot.get_response("Who are you? 给我讲一个笑话，长一点的，要转折"):
-            print(text_chunk, end="", flush=True)
-        print()  # 最后打印一个换行
-    else:
-        print("使用普通输出:")
-        response = chatbot.get_response("Who are you? 给我讲一个笑话，长一点的，要转折")
-        if response:
-            print(response)
-        else:
-            print("无法获取响应，请检查配置和网络连接")

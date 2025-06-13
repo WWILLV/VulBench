@@ -4,6 +4,7 @@ Data/
 .idea/
 .vscode/
 .git/
+Test/
 *.log
 *.pyc
 /config.yaml
