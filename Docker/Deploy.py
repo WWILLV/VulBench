@@ -207,6 +207,9 @@ class Deploy:
 
         image_name = f"vrbench_{os.path.basename(file_path)}{commit}"
         container = self.docker_handle.run_by_dockerfile(dockerfile_path=dockerfile_path, image_name=image_name)
+        if container is None:
+            logging.error(f"Failed to create container from Dockerfile {dockerfile_path}.")
+            raise RuntimeError(f"Failed to create container from Dockerfile {dockerfile_path}.")
         logging.info(f"Container {container.id} created from image {image_name}")
 
         return dockerfile_path, container

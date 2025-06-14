@@ -43,6 +43,19 @@ class DockerHandle:
             logging.error(f"Error retrieving images: {e}")
             return []
 
+    def get_image_by_container(self, container_id):
+        """
+        Get the Docker image used by a specific container.
+        :param container_id: ID of the Docker container.
+        :return: Docker image object.
+        """
+        try:
+            container = self.get_container(container_id)
+            return container.image
+        except Exception as e:
+            logging.error(f"Error retrieving image for container {container_id}: {e}")
+            return None
+
     def get_container(self, container_id):
         """
         Get a specific Docker container by its ID.
@@ -207,7 +220,7 @@ class DockerHandle:
         try:
             container = self.get_container(container_id)
             container.kill()
-            logging.info(f"Killed container {container_id}")
+            logging.warning(f"Killed container {container_id}")
         except Exception as e:
             logging.error(f"Error killing container {container_id}: {e}")
 
@@ -220,7 +233,7 @@ class DockerHandle:
         try:
             container = self.get_container(container_id)
             container.remove(force=True)
-            logging.info(f"Removed container {container_id}")
+            logging.warning(f"Removed container {container_id}")
         except Exception as e:
             logging.error(f"Error removing container {container_id}: {e}")
 
@@ -232,6 +245,6 @@ class DockerHandle:
         """
         try:
             self.client.images.remove(image_name, force=True)
-            logging.info(f"Removed image {image_name}")
+            logging.warning(f"Removed image {image_name}")
         except Exception as e:
             logging.error(f"Error removing image {image_name}: {e}")
