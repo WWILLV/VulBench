@@ -44,6 +44,8 @@ class Deploy:
         """
         if path == '':
             path = os.path.join(self.space_path, repo_url.split('/')[-1].removesuffix('.git'))
+        if not repo_url.startswith("http"):
+            repo_url = "https://github.com/" + repo_url.lstrip('/')
         logging.info(f"Cloning repository {repo_url} to {path}")
         try:
             git.Repo.clone_from(repo_url, path)
@@ -174,11 +176,36 @@ class Deploy:
             dependencies = ["vim", "curl", "patch", "git"]
         if other_commands is None:
             other_commands = []
-            for root, dirs, files in os.walk(os.path.dirname(file_path_true)):
-                if 'setup.py' in files:
+            # for root, dirs, files in os.walk(os.path.dirname(file_path_true)):
+            #     if 'setup.py' in files:
+            #         other_commands.append("python setup.py install")
+            #         break
+            #     if 'requirements.txt' in files:
+            #         other_commands.append("pip install -r requirements.txt")
+            #         break
+            for file in os.listdir(file_path_true):
+                file_full_path = os.path.join(file_path_true, file)
+                if not os.path.isfile(file_full_path):
+                    continue
+                file = file.lower()
+                if file == 'pyproject.toml':
+                    with open(file_full_path, 'r') as f:
+                        content = f.read()
+                    if '[tool.poetry]' in content or 'poetry.core.masonry.api' in content:
+                        other_commands.append("pip install poetry")
+                        other_commands.append("poetry config virtualenvs.create false")
+                        other_commands.append("poetry install --no-interaction --no-ansi --no-root")
+                    elif '[tool.hatch' in content or 'hatchling.build' in content:
+                        other_commands.append("pip install hatch")
+                        other_commands.append("hatch env create")
+                    else:
+                        logging.warning(f"Unsupported pyproject.toml format in {file_full_path}.")
+                        other_commands.append("pip install -e .")
+                    break
+                if file == 'setup.py':
                     other_commands.append("python setup.py install")
                     break
-                if 'requirements.txt' in files:
+                if file == 'requirements.txt':
                     other_commands.append("pip install -r requirements.txt")
                     break
         if environment == "":
