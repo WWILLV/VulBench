@@ -110,6 +110,26 @@ class DockerHandle:
             logging.error(f"Error retrieving vrbench containers: {e}")
             return []
 
+    def get_image_vrbench(self, image_name="vrbench"):
+        """
+        Get Docker images of vrbench.
+        :param image_name: If specified, filter by image name.
+        :return: All Docker images of vrbench or filtered by name.
+        """
+        try:
+            image_name = image_name.strip().lower()
+            if image_name == '':
+                image_name = 'vrbench'
+            all_images = self.get_images(all=True)
+            images = []
+            for image in all_images:
+                if image.tags and any(tag.lower().startswith(image_name) for tag in image.tags):
+                    images.append(image)
+            return images
+        except Exception as e:
+            logging.error(f"Error retrieving vrbench images: {e}")
+            return []
+
     def status(self, container_id):
         """
         Get the status of a specific Docker container.
@@ -224,27 +244,57 @@ class DockerHandle:
         except Exception as e:
             logging.error(f"Error killing container {container_id}: {e}")
 
-    def container_remove(self, container_id):
+    def container_remove(self, container_id, timeout=10):
         """
         Remove a Docker container.
         :param container_id: ID of the Docker container.
+        :param timeout: Timeout in seconds to wait for the container to exit.
         :return: None
         """
         try:
             container = self.get_container(container_id)
+            if container.status != 'exited':
+                container.kill()
+                for _ in range(timeout):
+                    container.reload()
+                    if container.status == 'exited':
+                        break
+                    time.sleep(1)
             container.remove(force=True)
             logging.warning(f"Removed container {container_id}")
         except Exception as e:
             logging.error(f"Error removing container {container_id}: {e}")
 
-    def image_remove(self, image_name):
+    def image_remove(self, image_name, timeout=10):
         """
         Remove a Docker image.
         :param image_name: Name of the Docker image.
+        :param timeout: Timeout in seconds to wait for dependent containers to stop.
         :return: None
         """
         try:
+            containers = self.client.containers.list(all=True, filters={'ancestor': image_name})
+            for c in containers:
+                self.container_remove(c.id, timeout=timeout)
             self.client.images.remove(image_name, force=True)
             logging.warning(f"Removed image {image_name}")
         except Exception as e:
             logging.error(f"Error removing image {image_name}: {e}")
+
+    def remove_dangling_images(self, timeout=10):
+        """
+        Remove dangling Docker images.
+        :param timeout: Timeout in seconds to wait for dependent containers to stop.
+        :return: True if all dangling images were removed, False otherwise.
+        """
+        try:
+            dangling = self.client.images.list(filters={'dangling': True})
+            for img in dangling:
+                containers = self.client.containers.list(all=True, filters={'ancestor': img.id})
+                for c in containers:
+                    self.container_remove(c.id, timeout=timeout)
+                self.client.images.remove(img.id, force=True)
+                logging.warning(f"Removed dangling image {img.id}")
+            return len(dangling) == 0
+        except Exception as e:
+            logging.error(f"Error removing dangling images: {e}")

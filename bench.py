@@ -3,8 +3,17 @@ __author__ = 'WILL_V'
 
 import utils
 import logging
-from sys import argv
+import argparse
 
 utils.setup_logging()
 logging.info("VRBench initialized.")
+
+parser = argparse.ArgumentParser(description="VRBench - A Benchmarking Tool for Vulnerability Repair")
+parser.add_argument(
+    "-n"
+    "--new",
+    type=str,
+    default="poc",
+    help="Add a new benchmark. Specify the benchmark type (e.g., 'poc'). Default is 'poc'."
+)
 
