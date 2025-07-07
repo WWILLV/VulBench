@@ -4,16 +4,28 @@ __author__ = 'WILL_V'
 import utils
 import logging
 import argparse
+from Invoke import Invoke
 
-utils.setup_logging()
-logging.info("VRBench initialized.")
 
 parser = argparse.ArgumentParser(description="VRBench - A Benchmarking Tool for Vulnerability Repair")
 parser.add_argument(
-    "-n"
+    "-n",
     "--new",
     type=str,
-    default="poc",
-    help="Add a new benchmark. Specify the benchmark type (e.g., 'poc'). Default is 'poc'."
+    help="Add a new benchmark."
+)
+parser.add_argument(
+    "-c",
+    "--clean",
+    type=str,
+    help="Clean VRBench. Specify 'all' to clean all, or provide a specific type (log,docker,workspace)."
+)
+parser.add_argument(
+    "-s",
+    "--start",
+    type=str,
+    help="Start a benchmark. Specify the benchmark name to start it."
 )
 
+vrbench = Invoke(parser.parse_args())
+vrbench.start()

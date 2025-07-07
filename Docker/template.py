@@ -3,10 +3,12 @@ __author__ = 'WILL_V'
 
 import logging
 import os
+import shutil
 import utils
 
 
-def get_dockerfile(py_version="", file_path="", dependencies=None, other_commands=None, environment="", cmd=None):
+def get_dockerfile(py_version="", file_path="", dependencies=None, other_commands=None, environment="", cmd=None,
+                   patch="", apply_patch=False):
     """
     Generate the Dockerfile content.
     :param py_version: Python version to use in the Dockerfile.
@@ -15,6 +17,8 @@ def get_dockerfile(py_version="", file_path="", dependencies=None, other_command
     :param other_commands: Other commands to be executed in the Docker image.
     :param environment: Environment variables to be set in the Docker image.
     :param cmd: Command to be executed when the Docker container starts.
+    :param patch: Path of the patch file to be applied in the Docker image.
+    :param apply_patch: Whether to apply the patch file.
     :return: Dockerfile content as a string.
     """
 
@@ -38,6 +42,13 @@ def get_dockerfile(py_version="", file_path="", dependencies=None, other_command
         if not file_path.endswith('/'):
             file_path += '/'
 
+    do_patch = ""
+    if patch != '' and os.path.exists(patch):
+        patch_name = os.path.basename(patch)
+        shutil.copy(patch, os.path.join(file_path, patch_name))
+        if apply_patch:
+            do_patch = f"git apply /vrbench/{patch_name}\n"
+
     base_dockerfile = f"""
 FROM python:{py_version}
 
@@ -52,6 +63,9 @@ COPY {file_path}/ /vrbench/
 RUN apt-get update \\
     && apt-get install -y --no-install-recommends build-essential libssl-dev libffi-dev {dependencies} \\
     && apt-get clean
+
+# Apply patch if provided
+{do_patch}
 
 # Initialize the environment
 RUN pip install --upgrade pip

@@ -7,6 +7,7 @@ import zipfile
 import tarfile
 import subprocess
 import json
+import shutil
 from Docker.template import get_dockerfile
 from Docker.DockerHandle import DockerHandle
 from utils import get_workspace
@@ -20,11 +21,12 @@ class Deploy:
         self.space_path = get_workspace()
         self.docker_handle = DockerHandle()
 
-    def download(self, url: str, path='') -> None:
+    def download(self, url: str, path='') -> str:
         """
         Downloads a file from the given URL to the specified path.
         :param url: The URL of the file to download.
         :param path: The local path where the file should be saved.
+        :return: The local path where the file was saved, otherwise an empty string if the download failed.
         """
         if path == '':
             path = os.path.join(self.space_path, url.split('/')[-1])
@@ -33,8 +35,42 @@ class Deploy:
         try:
             with open(path, 'wb') as file:
                 file.write(response.content)
+            return path
         except Exception as e:
             logging.error(f"Failed to download {url} to {path}: {e}")
+            return ''
+
+    @staticmethod
+    def move_file(src: str, dst: str) -> None:
+        """
+        Moves a file from the source path to the destination path.
+        :param src: The source file path.
+        :param dst: The destination file path.
+        """
+        if not os.path.exists(src):
+            logging.error(f"Source file {src} does not exist.")
+            return
+        try:
+            os.rename(src, dst)
+            logging.info(f"Moved file from {src} to {dst}")
+        except Exception as e:
+            logging.error(f"Failed to move file from {src} to {dst}: {e}")
+
+    @staticmethod
+    def copy_file(src: str, dst: str) -> None:
+        """
+        Copies a file from the source path to the destination path.
+        :param src: The source file path.
+        :param dst: The destination file path.
+        """
+        if not os.path.exists(src):
+            logging.error(f"Source file {src} does not exist.")
+            return
+        try:
+            shutil.copy(src, dst)
+            logging.info(f"Copied file from {src} to {dst}")
+        except Exception as e:
+            logging.error(f"Failed to copy file from {src} to {dst}: {e}")
 
     def clone(self, repo_url: str, path='') -> str:
         """
@@ -261,7 +297,8 @@ class Deploy:
         return uninstall_commands
 
     def dockerfile_deploy(self, py_version="3.7.9", file_path="", dependencies=None, other_commands=None,
-                          environment="", cmd=None, commit='', package_name='') -> tuple[str, Any]:
+                          environment="", cmd=None, commit='', package_name='', patch='', lazy_deploy=False) -> tuple[
+        str, Any]:
         """
         Deploys a Docker container using a Dockerfile generated from the specified file path.
         :param py_version: python version to use in the Dockerfile.
@@ -272,7 +309,9 @@ class Deploy:
         :param cmd: Command to run in the Docker container.
         :param commit: Commit hash to be used in the image name.
         :param package_name: Name of the package to be installed.
-        :return:
+        :param patch: Path of the patch file to be copied into the Docker container.
+        :param lazy_deploy: If True, the deployment will be lazy, meaning it will not execute the commands immediately.
+        :return: Dockerfile path and the created container object.
         """
         if file_path == '':
             logging.error(f"File path cannot be empty.")
@@ -333,6 +372,25 @@ class Deploy:
             #         break
             if len(other_commands) == 0:
                 logging.warning(f"No installation commands found in {file_path_true}. ")
+
+        if lazy_deploy:
+            # Not executing the commands immediately, but adding them to the deployment script for later execution.
+            logging.info(
+                "Lazy deploy is enabled. Other commands will be added to the `/vrbench/vrb_deploy.sh` but not executed.")
+            new_commands = []
+
+            def shell_quote_single(s: str) -> str:
+                return "'" + s.replace("'", "'\"'\"'") + "'"
+
+            for oc in other_commands:
+                oc = oc.strip()
+                quoted_oc = shell_quote_single(oc)
+                new_commands.extend([f"echo {quoted_oc} >> /vrbench/vrb_deploy.sh"])
+
+            other_commands = new_commands
+
+            other_commands.extend(['chmod +x /vrbench/vrb_deploy.sh'])
+
         if environment == "":
             environment = "ENV PATH=$PATH:/vrbench"
         if cmd is None:
@@ -344,7 +402,8 @@ class Deploy:
             dependencies=dependencies,
             other_commands=other_commands,
             environment=environment,
-            cmd=cmd
+            cmd=cmd,
+            patch=patch
         )
 
         dockerfile_path = os.path.join(self.space_path, f"vrbench_{os.path.basename(file_path)}.dockerfile")
