@@ -10,8 +10,8 @@ parser.add_argument(
     "-n",
     "--new",
     type=str,
-    metavar="benchmark_name",
-    help="Add a new benchmark."
+    metavar="poc_name",
+    help="Add a new POC."
 )
 parser.add_argument(
     "-c",
@@ -24,13 +24,19 @@ parser.add_argument(
     "-s",
     "--start",
     type=str,
-    metavar="benchmark_name",
-    help="Start a benchmark. Specify the benchmark name to start it."
+    metavar="poc_name",
+    help="Start a POC test. Specify the poc name to start it."
 )
 
 if not any(vars(parser.parse_args()).values()):
     print("Please provide arguments. Use -h/--help for more information.")
     exit(0)
 
-vrbench = Invoke(parser.parse_args())
-vrbench.start()
+try:
+    vrbench = Invoke(parser.parse_args())
+    vrbench.start()
+except KeyboardInterrupt:
+    print("[VRBench] Interrupted by user.")
+    print("Have a nice day!")
+except Exception as e:
+    print(f"Top-level exception occurred: {e}")

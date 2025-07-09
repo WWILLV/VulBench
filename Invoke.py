@@ -5,6 +5,7 @@ import logging
 import os.path
 import utils
 import time
+from Manage import Manage
 from Docker.DockerHandle import DockerHandle
 from Docker.Deploy import Deploy
 
@@ -36,12 +37,18 @@ class Invoke:
                 clean_args = ['log']
             fun_args.append({"function": "clean", "args": clean_args})
             return fun_args  # If user selected clean, we return immediately
-        elif self.args.new is not None:  # Creating a new benchmark
+        elif self.args.new is not None:  # Creating a new POC
             new_arg = self.args.new.strip()
             if new_arg == '':
-                logging.error("Must provide a name for the new benchmark.")
+                logging.error("Must provide a name for the new poc.")
                 return None
             fun_args.append({"function": "new", "args": new_arg})
+        elif self.args.start is not None:
+            start_arg = self.args.start.strip()
+            if start_arg == '':
+                logging.error("Must provide a name for the poc to start.")
+                return None
+            fun_args.append({"function": "start", "args": start_arg})
 
         return fun_args
 
@@ -128,29 +135,30 @@ class Invoke:
                     logging.error(f"Unknown clean argument: {arg}")
 
     @staticmethod
-    def new_benchmark(name: str):
+    def new_poc(name: str):
         """
-        Create a new VRBench benchmark.
-        :param name: The name of the new benchmark.
+        Create a new POC of VRBench.
+        :param name: The name of the new POC.
         :return:
         """
-        logging.info(f"Creating a new VRBench benchmark: {name}")
+        logging.info(f"Creating a new VRBench POC: {name}")
         deployer = Deploy()
         sample = os.path.join(os.path.dirname(__file__), 'Data', 'poc', 'sample')
-        new_benchmark_dir = os.path.join(os.path.dirname(__file__), 'Data', 'poc', name)
+        new_poc_dir = os.path.join(os.path.dirname(__file__), 'Data', 'poc', name)
         if os.path.exists(sample):
-            if os.path.exists(new_benchmark_dir):
-                logging.error(f"Benchmark directory already exists: {new_benchmark_dir}")
+            if os.path.exists(new_poc_dir):
+                logging.error(f"POC directory already exists: {new_poc_dir}")
                 return
-            deployer.copy_dir(sample, new_benchmark_dir)
+            deployer.copy_dir(sample, new_poc_dir)
         else:
             logging.error(f"Sample directory does not exist: {sample}")
-        if os.path.exists(new_benchmark_dir):
-            logging.info(f"New benchmark '{name}' created successfully.")
-            logging.info(f"Benchmark files are located at: {new_benchmark_dir}")
+        if os.path.exists(new_poc_dir):
+            logging.info(f"New POC '{name}' created successfully.")
+            logging.info(f"Benchmark files are located at: {new_poc_dir}")
             logging.info("Please edit the benchmark files in above directory.")
+            logging.info("Please update the info.json file.")
         else:
-            logging.error(f"New benchmark '{name}' creation failed.")
+            logging.error(f"New POC '{name}' creation failed.")
 
     def start(self):
         logging.info("VRBench initialized.")
@@ -161,7 +169,13 @@ class Invoke:
         for fun_arg in fun_args:
             if fun_arg['function'] == 'clean':  # Cleaning up resources
                 self.clean(fun_arg['args'])
+                break
             if fun_arg['function'] == 'new':  # Creating a new benchmark
-                self.new_benchmark(fun_arg['args'])
+                self.new_poc(fun_arg['args'])
+                break
+            if fun_arg['function'] == 'start':
+                manage = Manage()
+                manage.run_bench_by_name(fun_arg['args'])
+                break
 
         pass
