@@ -87,7 +87,7 @@ class Invoke:
             vrb_containers = dh.get_container_vrbench()
             if vrb_containers:
                 all_containers = [container.name for container in vrb_containers if container.name]
-                logging.warning(f"{len(all_containers)} VRBench containers found: {all_containers}")
+                print(f"{len(all_containers)} VRBench containers found: {all_containers}")
                 choice = input("Do you want to remove these containers? (y/n): ").strip().lower()
                 if choice == 'y':
                     for container in vrb_containers:
@@ -102,7 +102,7 @@ class Invoke:
             vrb_images = dh.get_image_vrbench()
             if vrb_images:
                 all_images = [image.tags[0] for image in vrb_images if image.tags]
-                logging.warning(f"{len(all_images)} VRBench images found: {all_images}")
+                print(f"{len(all_images)} VRBench images found: {all_images}")
                 choice = input("Do you want to remove these images? (y/n): ").strip().lower()
                 if choice == 'y':
                     for image in vrb_images:

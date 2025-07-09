@@ -101,6 +101,8 @@ class Manage:
         deployer.copy_file(patch_path, os.path.join(path, f"{repo_name}.patch"))
 
         # build the docker image and run the container by dockerfile
+        logging.info(f"Building Docker image for {repo_name} at commit {pc} with Python version {py_version}.")
+        logging.info(f"Please wait, this may take a while...")
         dp, container_ori = deployer.dockerfile_deploy(py_version=py_version, file_path=path, commit=pc,
                                                        lazy_deploy=lazy_deploy)
         logging.info(f"Container ID: {container_ori.id}")
@@ -160,11 +162,13 @@ class Manage:
         print(self.format_info(info))
         logging.info(f"Running benchmark for POC: {name}")
         try:
+            print("Please wait, this may take a while...")
             self.run_bench(git_repo=necessary["git_repo"],
                            commit=necessary["commit"],
                            py_version=necessary["py_version"],
                            name=name,
                            check_command=necessary["check_command"])
+            print("All done! You can check the results in the logs.")
         except Exception as e:
             logging.error(f"Error running benchmark for {name}: {e}")
             return
