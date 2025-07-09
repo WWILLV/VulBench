@@ -90,11 +90,11 @@ class DockerHandle:
             logging.error(f"Error retrieving container by name {container_name}: {e}")
             return None
 
-    def get_container_vrbench(self, container_name="vrbench"):
+    def get_container_vrbench(self, container_name="vrbench") -> list:
         """
         Get Docker containers of vrbench.
         :param container_name: If specified, filter by container name.
-        :return: All Docker containers of vrbench or filtered by name.
+        :return: All Docker container objects of vrbench or filtered by name.
         """
         try:
             container_name = container_name.strip().lower()
@@ -110,11 +110,11 @@ class DockerHandle:
             logging.error(f"Error retrieving vrbench containers: {e}")
             return []
 
-    def get_image_vrbench(self, image_name="vrbench"):
+    def get_image_vrbench(self, image_name="vrbench") -> list:
         """
         Get Docker images of vrbench.
         :param image_name: If specified, filter by image name.
-        :return: All Docker images of vrbench or filtered by name.
+        :return: All Docker image objects of vrbench or filtered by name.
         """
         try:
             image_name = image_name.strip().lower()
@@ -332,9 +332,11 @@ class DockerHandle:
                     dangling = self.client.images.list(name='vrbench', all=True,
                                                        filters={'dangling': True, 'label': 'maintainer=vrbench'})
                     if not dangling:
-                        logging.info("No vrbench dangling images found.")
+                        logging.info("No VRBench dangling images found.")
                 else:
                     dangling = self.client.images.list(filters={'dangling': True})
+                    if not dangling:
+                        logging.info("No dangling images found.")
                 return dangling
 
             if image_id != '':
@@ -348,7 +350,6 @@ class DockerHandle:
                 dangling = get_dangling(only_vrbench)
 
             if not dangling:
-                logging.info("No dangling images found.")
                 return True
             logging.warning(f"Found {len(dangling)} dangling images to remove.")
 
@@ -373,7 +374,7 @@ class DockerHandle:
                                     for c in containers:
                                         self.container_remove(c.id, timeout=timeout)
                                     self.client.images.remove(img.id, force=True)
-                                    logging.warning(f"Removed vrbench-related dangling image {img.id}")
+                                    logging.warning(f"Removed VRBench-related dangling image {img.id}")
                                     break
                     except Exception as e:
                         logging.warning(f"Error checking image {img.id}: {e}")

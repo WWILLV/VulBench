@@ -1,3 +1,6 @@
+# -*- coding: UTF-8 -*-
+__author__ = 'WILL_V'
+
 import logging
 import os
 from typing import Any
@@ -71,6 +74,39 @@ class Deploy:
             logging.info(f"Copied file from {src} to {dst}")
         except Exception as e:
             logging.error(f"Failed to copy file from {src} to {dst}: {e}")
+
+    @staticmethod
+    def copy_dir(src: str, dst: str) -> None:
+        """
+        Copies a directory from the source path to the destination path.
+        :param src: The source directory path.
+        :param dst: The destination directory path.
+        """
+        if not os.path.exists(src):
+            logging.error(f"Source directory {src} does not exist.")
+            return
+        try:
+            shutil.copytree(src, dst)
+            logging.info(f"Copied directory from {src} to {dst}")
+        except Exception as e:
+            logging.error(f"Failed to copy directory from {src} to {dst}: {e}")
+
+    @staticmethod
+    def tar_dir(src: str, dst: str) -> None:
+        """
+        Creates a tar archive of the specified directory.
+        :param src: The source directory path to be archived.
+        :param dst: The destination path for the tar archive.
+        """
+        if not os.path.exists(src):
+            logging.error(f"Source directory {src} does not exist.")
+            return
+        try:
+            with tarfile.open(dst, 'w') as tar:
+                tar.add(src, arcname=os.path.basename(src))
+            logging.info(f"Created tar archive {dst} from directory {src}")
+        except Exception as e:
+            logging.error(f"Failed to create tar archive {dst} from directory {src}: {e}")
 
     def clone(self, repo_url: str, path='') -> str:
         """
