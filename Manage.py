@@ -72,7 +72,7 @@ class Manage:
         output += "-" * 50 + "\n"
         return output
 
-    def run_bench(self, git_repo: str, commit: str, py_version: str, name: str, check_command: str,
+    def run_bench(self, git_repo: str, commit: str, py_version: str, name: str, check_command: str, patch: str = "",
                   lazy_deploy: bool = True):
         """
         Run the benchmark for a specific POC.
@@ -81,6 +81,7 @@ class Manage:
         :param py_version: Python version to use for the deployment.
         :param name: Name of the POC to run.
         :param check_command: Check command to run before and after patching.
+        :param patch: Path to the patch file, if any.
         :param lazy_deploy: Lazy deploy or not, default is True.
         :return:
         """
@@ -95,9 +96,13 @@ class Manage:
         pc = deployer.get_parent_commit(repo_path=path, current_commit=current_commit)
         deployer.checkout(path, pc)
 
-        # download the patch and copy it to the repo path
-        patch = f"{git_url}/commit/{current_commit}.patch"
-        patch_path = deployer.download(patch, os.path.join(deployer.space_path, f"{repo_name}_{current_commit}.patch"))
+        if patch == '':
+            # download the patch and copy it to the repo path
+            git_patch = f"{git_url}/commit/{current_commit}.patch"
+            patch_path = deployer.download(git_patch,
+                                           os.path.join(deployer.space_path, f"{repo_name}_{current_commit}.patch"))
+        else:
+            patch_path = patch
         deployer.copy_file(patch_path, os.path.join(path, f"{repo_name}.patch"))
 
         # build the docker image and run the container by dockerfile
@@ -148,10 +153,11 @@ class Manage:
                                                        command=f"python /vrbench/poc/{name}/run.py")
         logging.info(f"Output of POC execution after patching: {output}")
 
-    def run_bench_by_name(self, name: str):
+    def run_bench_by_name(self, name: str, patch: str):
         """
         Run the benchmark for a specific POC by its name.
         :param name: The name of the POC.
+        :param patch: The path to the patch file.
         :return:
         """
         info, necessary = self.get_info(name)

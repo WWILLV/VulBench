@@ -27,6 +27,13 @@ parser.add_argument(
     metavar="poc_name",
     help="Start a POC test. Specify the poc name to start it."
 )
+parser.add_argument(
+    "-p",
+    "--patch",
+    type=str,
+    metavar="path_to_patch",
+    help="Apply a patch to target application. Provide the path to the patch file."
+)
 
 if not any(vars(parser.parse_args()).values()):
     print("Please provide arguments. Use -h/--help for more information.")

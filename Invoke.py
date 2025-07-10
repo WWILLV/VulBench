@@ -48,7 +48,16 @@ class Invoke:
             if start_arg == '':
                 logging.error("Must provide a name for the poc to start.")
                 return None
-            fun_args.append({"function": "start", "args": start_arg})
+            patch_path = ''
+            if self.args.patch is not None:
+                patch_path = self.args.patch.strip()
+                if patch_path == '':
+                    logging.error("Must provide a path for the patch to apply.")
+                    return None
+                if not os.path.exists(patch_path):
+                    logging.error(f"Patch file does not exist: {patch_path}")
+                    return None
+            fun_args.append({"function": "start", "args": start_arg, "patch": patch_path})
 
         return fun_args
 
@@ -175,7 +184,7 @@ class Invoke:
                 break
             if fun_arg['function'] == 'start':
                 manage = Manage()
-                manage.run_bench_by_name(fun_arg['args'])
+                manage.run_bench_by_name(fun_arg['args'], fun_arg['patch'])
                 break
 
         pass
