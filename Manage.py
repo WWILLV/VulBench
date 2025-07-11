@@ -37,12 +37,26 @@ class Manage:
             for security_issue in security_issues:
                 public_id = security_issue.get("public_id", "")
                 if public_id.strip().upper() == name.strip().upper():
+
+                    # Check if the POC exists and is available, if not, prompt the user
+                    poc = security_issue.get("poc", {})
+                    if not poc.get("exists", False):
+                        logging.error(f"POC of {name} does not exist in info data.")
+                    if not poc.get("available", False):
+                        logging.error(f"POC of {name} is not available.")
+                        print(f"POC of {name} is not available, please check the info file.")
+                        choice = input("Do you want to run the benchmark anyway? (y/n): ").strip().lower()
+                        if choice not in ['y', '']:
+                            logging.info("User chose not to run the benchmark.")
+                            raise KeyboardInterrupt
+
                     necessary = {
                         "git_repo": item.get("repo_url", ""),
                         "commit": security_issue.get("patch_commits", [{}])[0].get("commit_hash", ""),
                         "py_version": security_issue.get("python_version", ""),
                         "name": public_id.strip(),
                         "check_command": security_issue.get("check_command", ""),
+                        "deploy_command": security_issue.get("deploy_command", None),
                     }
                     return item, necessary
 
@@ -73,7 +87,7 @@ class Manage:
         return output
 
     def run_bench(self, git_repo: str, commit: str, py_version: str, name: str, check_command: str, patch: str = "",
-                  lazy_deploy: bool = True):
+                  lazy_deploy: bool = True, deploy_command: list = None):
         """
         Run the benchmark for a specific POC.
         :param git_repo: Git repository URL.
@@ -83,6 +97,7 @@ class Manage:
         :param check_command: Check command to run before and after patching.
         :param patch: Path to the patch file, if any.
         :param lazy_deploy: Lazy deploy or not, default is True.
+        :param deploy_command: Command to run for deployment, if empty, will deploy automatically.
         :return:
         """
         deployer = Deploy()
@@ -109,7 +124,7 @@ class Manage:
         logging.info(f"Building Docker image for {repo_name} at commit {pc} with Python version {py_version}.")
         logging.info(f"Please wait, this may take a while...")
         dp, container_ori = deployer.dockerfile_deploy(py_version=py_version, file_path=path, commit=pc,
-                                                       lazy_deploy=lazy_deploy)
+                                                       lazy_deploy=lazy_deploy, other_commands=deploy_command)
         logging.info(f"Container ID: {container_ori.id}")
         dh = DockerHandle()
         image_deployed = dh.get_image_by_container(container_id=container_ori.id)
@@ -173,7 +188,8 @@ class Manage:
                            commit=necessary["commit"],
                            py_version=necessary["py_version"],
                            name=name,
-                           check_command=necessary["check_command"])
+                           check_command=necessary["check_command"],
+                           deploy_command=necessary["deploy_command"])
             print("All done! You can check the results in the logs.")
         except Exception as e:
             logging.error(f"Error running benchmark for {name}: {e}")
