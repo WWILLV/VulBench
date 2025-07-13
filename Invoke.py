@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 __author__ = 'WILL_V'
 
+import json
 import logging
 import os.path
 import utils
@@ -8,6 +9,7 @@ import time
 from Manage import Manage
 from Docker.DockerHandle import DockerHandle
 from Docker.Deploy import Deploy
+from Data.PatchesAnalysis import PatchesAnalysis
 
 utils.setup_logging()
 
@@ -150,6 +152,42 @@ class Invoke:
         :param name: The name of the new POC.
         :return:
         """
+
+        def get_info_by_cve(cve: str):
+            """
+            Get info data by CVE.
+            :param cve: CVE ID.
+            :return: info data.
+            """
+            patches_poc = os.path.join(os.path.dirname(__file__), 'Data', 'patches_poc.json')
+            if not os.path.exists(patches_poc):
+                logging.error(f"patches_poc file does not exist: {patches_poc}")
+                return None
+            pa = PatchesAnalysis(patches_poc)
+            patches = pa.select_patches_by_public_id(public_id=cve)
+            if len(patches) == 0:
+                return None
+            logging.info(f"Found {len(patches)} patches for CVE: {cve}")
+            patch = patches[0]
+            logging.info(f"Selected first only: \n{patch}")
+            print(f"Selected patch for CVE {cve}: \n{Manage().format_info(patch)}")
+
+            if patch.get("security_issues") is None:
+                logging.error(f"No security issues found for CVE: {cve}")
+                return None
+
+            for issue in patch["security_issues"]:
+                if issue.get("public_id").lower().strip() == cve.lower().strip():
+                    issue["python_version"] = ""
+                    issue["check_command"] = ""
+                    issue["run_kwargs"] = {}
+                    issue["poc"]["exists"] = True
+                    issue["poc"]["type"] = "executable"
+                    issue["poc"]["available"] = False
+                    break
+
+            return patch
+
         logging.info(f"Creating a new VulBench POC: {name}")
         deployer = Deploy()
         sample = os.path.join(os.path.dirname(__file__), 'Data', 'poc', 'sample')
@@ -165,7 +203,30 @@ class Invoke:
             logging.info(f"New POC '{name}' created successfully.")
             logging.info(f"Benchmark files are located at: {new_poc_dir}")
             logging.info("Please edit the benchmark files in above directory.")
-            logging.info("Please update the info.json file.")
+            logging.info("Try to update the info.json file.")
+            info = get_info_by_cve(name)
+            if info is not None:
+                info_path = os.path.join(os.path.dirname(__file__), 'Data', 'poc', 'info.json')
+                with open(info_path, 'r', encoding='utf-8') as f:
+                    info_data = json.load(f)
+
+                update_flag = False
+                for idata in info_data:
+                    if idata.get("library_name","").lower().strip() == info["library_name"].lower().strip():
+                        logging.info(f"Info data for CVE '{name}' already exists, updating it.")
+                        idata = info
+                        update_flag = True
+                        break
+                if not update_flag:
+                    info_data.append(info)
+
+                with open(info_path, 'w', encoding='utf-8') as f:
+                    json.dump(info_data, f, indent=4, ensure_ascii=False)
+
+                logging.info(f"Info data for CVE '{name}' written to: {info_path}")
+            else:
+                logging.error(f"Failed to get info data for CVE '{name}'.")
+                logging.error("Please update the info.json file manually.")
         else:
             logging.error(f"New POC '{name}' creation failed.")
 
