@@ -57,6 +57,7 @@ class Manage:
                         "name": public_id.strip(),
                         "check_command": security_issue.get("check_command", ""),
                         "deploy_command": security_issue.get("deploy_command", None),
+                        "run_kwargs": security_issue.get("run_kwargs", {}),
                     }
                     return item, necessary
 
@@ -87,7 +88,7 @@ class Manage:
         return output
 
     def run_bench(self, git_repo: str, commit: str, py_version: str, name: str, check_command: str, patch: str = "",
-                  lazy_deploy: bool = True, deploy_command: list = None):
+                  lazy_deploy: bool = True, deploy_command: list = None, run_kwargs: dict = None):
         """
         Run the benchmark for a specific POC.
         :param git_repo: Git repository URL.
@@ -98,6 +99,7 @@ class Manage:
         :param patch: Path to the patch file, if any.
         :param lazy_deploy: Lazy deploy or not, default is True.
         :param deploy_command: Command to run for deployment, if empty, will deploy automatically.
+        :param run_kwargs: Additional arguments for running the container.
         :return:
         """
         deployer = Deploy()
@@ -112,23 +114,24 @@ class Manage:
         deployer.checkout(path, pc)
 
         if patch == '':
-            # download the patch and copy it to the repo path
+            # download the patch
             git_patch = f"{git_url}/commit/{current_commit}.patch"
             patch_path = deployer.download(git_patch,
                                            os.path.join(deployer.space_path, f"{repo_name}_{current_commit}.patch"))
         else:
             patch_path = patch
-        deployer.copy_file(patch_path, os.path.join(path, f"{repo_name}.patch"))
+        # deployer.copy_file(patch_path, os.path.join(path, f"{repo_name}.patch"))
 
         # build the docker image and run the container by dockerfile
         logging.info(f"Building Docker image for {repo_name} at commit {pc} with Python version {py_version}.")
         logging.info(f"Please wait, this may take a while...")
         dp, container_ori = deployer.dockerfile_deploy(py_version=py_version, file_path=path, commit=pc,
-                                                       lazy_deploy=lazy_deploy, other_commands=deploy_command)
+                                                       lazy_deploy=lazy_deploy, other_commands=deploy_command,
+                                                       run_kwargs=run_kwargs)
         logging.info(f"Container ID: {container_ori.id}")
         dh = DockerHandle()
         image_deployed = dh.get_image_by_container(container_id=container_ori.id)
-        container_patched = dh.run_by_image(image=image_deployed, patched=True)
+        container_patched = dh.run_by_image(image=image_deployed, patched=True, run_kwargs=run_kwargs)
         logging.info(f"Container ID (patched): {container_patched.id}")
 
         # copy the poc files to the container
@@ -139,6 +142,11 @@ class Manage:
                                               src_path=self.local_poc_path,
                                               dest_path="/vulbench/poc")
 
+        # copy the patch file to the container
+        deployer.docker_handle.container_copy(container_id=container_patched.id,
+                                              src_path=patch_path,
+                                              dest_path=f"/vulbench/{repo_name}.patch")
+
         # run the lazy deploy script
         if lazy_deploy:
             logging.info("Running lazy deploy script in both containers, this may take a while... ")
@@ -147,6 +155,7 @@ class Manage:
                                                   command="bash /vulbench/vb_deploy.sh")
             logging.info("Lazy deploy script executed successfully in both containers.")
 
+        logging.info("Running POC...")
         # Run the POC in the original container
         output = deployer.docker_handle.container_exec(container_id=container_ori.id,
                                                        command=f"python /vulbench/poc/{name}/run.py")
@@ -167,6 +176,27 @@ class Manage:
         output = deployer.docker_handle.container_exec(container_id=container_patched.id,
                                                        command=f"python /vulbench/poc/{name}/run.py")
         logging.info(f"Output of POC execution after patching: {output}")
+
+        # Get vb_poc_result.json from the both container
+        result_dir = os.path.join(deployer.space_path, f"result")
+        result_ori = deployer.docker_handle.get_files_from_container(container_id=container_ori.id,
+                                                                     src_path="/vulbench/vb_poc_result.json",
+                                                                     dest_path=result_dir)
+        if result_ori is not None:
+            result_ori = os.path.join(result_dir, f"vb_poc_result.json")
+            ori_to = os.path.join(result_dir, f"{repo_name}_{current_commit}ori.json")
+            deployer.move_file(result_ori, ori_to)
+            logging.info(f"Original result saved to {ori_to}")
+
+        result_patched = deployer.docker_handle.get_files_from_container(container_id=container_patched.id,
+                                                                         src_path="/vulbench/vb_poc_result.json",
+                                                                         dest_path=result_dir)
+        if result_patched is not None:
+            result_patched = os.path.join(result_dir, f"vb_poc_result.json")
+            patched_to = os.path.join(result_dir, f"{repo_name}_{current_commit}_patched.json")
+            deployer.move_file(result_patched, patched_to)
+            logging.info(f"Patched result saved to {patched_to}")
+
 
     def run_bench_by_name(self, name: str, patch: str):
         """
@@ -189,7 +219,8 @@ class Manage:
                            py_version=necessary["py_version"],
                            name=name,
                            check_command=necessary["check_command"],
-                           deploy_command=necessary["deploy_command"])
+                           deploy_command=necessary["deploy_command"],
+                           run_kwargs=necessary["run_kwargs"], )
             print("All done! You can check the results in the logs.")
         except Exception as e:
             logging.error(f"Error running benchmark for {name}: {e}")

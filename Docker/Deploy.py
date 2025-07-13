@@ -264,9 +264,11 @@ class Deploy:
                         {"name": pkg_name, "path": file_full_path, "type": "hatch", "cmd": install_commands})
                 else:
                     logging.warning(f"Unsupported pyproject.toml format in {file_full_path}.")
-                    install_commands.append("pip install -e .")
-                    pkg_installed_info.append(
-                        {"name": pkg_name, "path": file_full_path, "type": "pip", "cmd": install_commands})
+                    logging.warning(f"Will check for other installation methods.")
+                    continue
+                    # install_commands.append("pip install -e .")
+                    # pkg_installed_info.append(
+                    #     {"name": pkg_name, "path": file_full_path, "type": "pip", "cmd": install_commands})
                 break
             if file == 'setup.py':
                 install_commands.append("python setup.py install")
@@ -278,6 +280,13 @@ class Deploy:
                 pkg_installed_info.append(
                     {"name": pkg_name, "path": file_full_path, "type": "requirements", "cmd": install_commands})
                 break
+
+        # If no specific installation commands were found, default to pip install -e .
+        if len(install_commands) == 0:
+            install_commands.append("pip install -e .")
+            pkg_installed_info.append(
+                {"name": pkg_name, "path": package_dir, "type": "pip", "cmd": install_commands})
+
         with open(pkg_installed_info_path, 'w') as f:
             json.dump(pkg_installed_info, f, indent=4)
         return install_commands
@@ -333,7 +342,8 @@ class Deploy:
         return uninstall_commands
 
     def dockerfile_deploy(self, py_version="3.7.9", file_path="", dependencies=None, other_commands=None,
-                          environment="", cmd=None, commit='', package_name='', patch='', lazy_deploy=False) -> tuple[
+                          environment="", cmd=None, commit='', package_name='', patch='', lazy_deploy=False,
+                          run_kwargs=None) -> tuple[
         str, Any]:
         """
         Deploys a Docker container using a Dockerfile generated from the specified file path.
@@ -347,6 +357,7 @@ class Deploy:
         :param package_name: Name of the package to be installed.
         :param patch: Path of the patch file to be copied into the Docker container.
         :param lazy_deploy: If True, the deployment will be lazy, meaning it will not execute the commands immediately.
+        :param run_kwargs: Additional keyword arguments to pass to the Docker run command.
         :return: Dockerfile path and the created container object.
         """
         if file_path == '':
@@ -453,7 +464,7 @@ class Deploy:
             commit = '_' + commit
 
         image_name = f"vulbench_{os.path.basename(file_path)}{commit}"
-        container = self.docker_handle.run_by_dockerfile(dockerfile_path=dockerfile_path, image_name=image_name)
+        container = self.docker_handle.run_by_dockerfile(dockerfile_path=dockerfile_path, image_name=image_name, run_kwargs=run_kwargs)
         if container is None:
             logging.error(f"Failed to create container from Dockerfile {dockerfile_path}.")
             raise RuntimeError(f"Failed to create container from Dockerfile {dockerfile_path}.")

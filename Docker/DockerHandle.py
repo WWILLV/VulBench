@@ -7,6 +7,7 @@ import time
 import os
 import tarfile
 import io
+import utils
 
 
 class DockerHandle:
@@ -160,13 +161,14 @@ class DockerHandle:
             logging.error(f"Error retrieving status for container {container_id}: {e}")
             return None
 
-    def run_by_image(self, image=None, name='', tag='latest', patched=False):
+    def run_by_image(self, image=None, name='', tag='latest', patched=False, run_kwargs=None):
         """
         Build and run a Docker container from an existing image.
         :param image: Docker image object.
         :param name: Name for the Docker container.
         :param tag: Tag for the Docker image.
         :param patched: If True, add `patched` suffix to the container name.
+        :param run_kwargs: Additional keyword arguments for client.containers.run.
         :return: The created container object.
         """
         try:
@@ -188,20 +190,22 @@ class DockerHandle:
                 detach=True,  # -d
                 name=name,
                 stdin_open=True,  # -i
-                tty=True  # -t
+                tty=True,  # -t
+                **(run_kwargs if run_kwargs else {})
             )
             return container
         except Exception as e:
             logging.error(f"Error running container from image {image.tags}: {e}")
             return None
 
-    def run_by_dockerfile(self, dockerfile_path, image_name, name='', tag='latest'):
+    def run_by_dockerfile(self, dockerfile_path, image_name, name='', tag='latest', run_kwargs=None):
         """
         Build and run a Docker container from a Dockerfile.
         :param dockerfile_path: Path to the Dockerfile.
         :param image_name: Name of the Docker image to build.
         :param name: Name for the Docker container.
         :param tag: Tag for the Docker image.
+        :param run_kwargs: Additional keyword arguments for client.containers.run.
         :return: The created container object.
         """
         try:
@@ -226,7 +230,8 @@ class DockerHandle:
                 detach=True,  # -d
                 name=name,
                 stdin_open=True,  # -i
-                tty=True  # -t
+                tty=True,  # -t
+                **(run_kwargs if run_kwargs else {})
             )
             return container
         except Exception as e:
@@ -251,6 +256,29 @@ class DockerHandle:
             logging.info(f"Copied {src_path} to {container_id}:{dest_path}")
         except Exception as e:
             logging.error(f"Error copying files to container {container_id}: {e}")
+
+    def get_files_from_container(self, container_id, src_path='/vulbench/vb_poc_result.json', dest_path=''):
+        """
+        Get files from a Docker container to the host.
+        :param container_id: ID of the Docker container.
+        :param src_path: Source path in the container.
+        :param dest_path: Destination path on the host.
+        :return: destination path where files are copied.
+        """
+        try:
+            if dest_path == '':
+                dest_path = os.path.join(utils.get_workspace(), container_id, os.path.basename(src_path))
+            container = self.get_container(container_id)
+            tar_stream_gen, stat = container.get_archive(src_path)
+            tar_bytes = b''.join(tar_stream_gen)
+            tar_stream = io.BytesIO(tar_bytes)
+            with tarfile.open(fileobj=tar_stream, mode='r') as tar:
+                tar.extractall(path=dest_path)
+            logging.info(f"Copied files from {container_id}:{src_path} to {dest_path}")
+            return dest_path
+        except Exception as e:
+            logging.error(f"Error getting files from container {container_id}: {e}")
+            return None
 
     def container_exec(self, container_id, command):
         """
