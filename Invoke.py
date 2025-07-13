@@ -13,6 +13,7 @@ from Data.PatchesAnalysis import PatchesAnalysis
 
 utils.setup_logging()
 
+
 class Invoke:
     def __init__(self, args=None):
         self.args = args
@@ -170,10 +171,10 @@ class Invoke:
             logging.info(f"Found {len(patches)} patches for CVE: {cve}")
             patch = patches[0]
             logging.info(f"Selected first only: \n{patch}")
-            print(f"Selected patch for CVE {cve}: \n{Manage().format_info(patch)}")
+            print(f"Selected patch for {cve}: \n{Manage().format_info(patch)}")
 
             if patch.get("security_issues") is None:
-                logging.error(f"No security issues found for CVE: {cve}")
+                logging.error(f"No security issues found for: {cve}")
                 return None
 
             for issue in patch["security_issues"]:
@@ -184,9 +185,9 @@ class Invoke:
                     issue["poc"]["exists"] = True
                     issue["poc"]["type"] = "executable"
                     issue["poc"]["available"] = False
-                    break
+                    return patch
 
-            return patch
+            return None
 
         logging.info(f"Creating a new VulBench POC: {name}")
         deployer = Deploy()
@@ -212,8 +213,8 @@ class Invoke:
 
                 update_flag = False
                 for idata in info_data:
-                    if idata.get("library_name","").lower().strip() == info["library_name"].lower().strip():
-                        logging.info(f"Info data for CVE '{name}' already exists, updating it.")
+                    if idata.get("library_name", "").lower().strip() == info["library_name"].lower().strip():
+                        logging.info(f"Info data for '{name}' already exists, updating it.")
                         idata = info
                         update_flag = True
                         break
@@ -223,9 +224,10 @@ class Invoke:
                 with open(info_path, 'w', encoding='utf-8') as f:
                     json.dump(info_data, f, indent=4, ensure_ascii=False)
 
-                logging.info(f"Info data for CVE '{name}' written to: {info_path}")
+                logging.info(f"Info data for '{name}' written to: {info_path}")
+                logging.info("Please check the info.json file and update it if necessary.")
             else:
-                logging.error(f"Failed to get info data for CVE '{name}'.")
+                logging.error(f"Failed to get info data for '{name}'.")
                 logging.error("Please update the info.json file manually.")
         else:
             logging.error(f"New POC '{name}' creation failed.")
