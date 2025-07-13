@@ -90,16 +90,16 @@ class DockerHandle:
             logging.error(f"Error retrieving container by name {container_name}: {e}")
             return None
 
-    def get_container_vrbench(self, container_name="vrbench") -> list:
+    def get_container_vulbench(self, container_name="vulbench") -> list:
         """
-        Get Docker containers of vrbench.
+        Get Docker containers of vulbench.
         :param container_name: If specified, filter by container name.
-        :return: All Docker container objects of vrbench or filtered by name.
+        :return: All Docker container objects of vulbench or filtered by name.
         """
         try:
             container_name = container_name.strip().lower()
             if container_name == '':
-                container_name = 'vrbench'
+                container_name = 'vulbench'
             all_containers = self.get_all_containers()
             containers = []
             for container in all_containers:
@@ -107,19 +107,19 @@ class DockerHandle:
                     containers.append(container)
             return containers
         except Exception as e:
-            logging.error(f"Error retrieving vrbench containers: {e}")
+            logging.error(f"Error retrieving vulbench containers: {e}")
             return []
 
-    def get_image_vrbench(self, image_name="vrbench") -> list:
+    def get_image_vulbench(self, image_name="vulbench") -> list:
         """
-        Get Docker images of vrbench.
+        Get Docker images of vulbench.
         :param image_name: If specified, filter by image name.
-        :return: All Docker image objects of vrbench or filtered by name.
+        :return: All Docker image objects of vulbench or filtered by name.
         """
         try:
             image_name = image_name.strip().lower()
             if image_name == '':
-                image_name = 'vrbench'
+                image_name = 'vulbench'
             all_images = self.get_images(all=True)
             images = []
             for image in all_images:
@@ -127,7 +127,7 @@ class DockerHandle:
                     images.append(image)
             return images
         except Exception as e:
-            logging.error(f"Error retrieving vrbench images: {e}")
+            logging.error(f"Error retrieving vulbench images: {e}")
             return []
 
     def status(self, container_id):
@@ -173,15 +173,16 @@ class DockerHandle:
             if image is None:
                 raise Exception("Image cannot be empty.")
             if name == '':
-                image_name = image.tags[0].split(':')[0] if image.tags else 'vrbench'
-                if image_name.startswith('vrbench'):
+                image_name = image.tags[0].split(':')[0] if image.tags else 'vulbench'
+                if image_name.startswith('vulbench'):
                     name = f"{image_name}_{time.strftime('%Y%m%d%H%M%S')}"
                 else:
-                    name = f"vrbench_{image_name}_{time.strftime('%Y%m%d%H%M%S')}"
+                    name = f"vulbench_{image_name}_{time.strftime('%Y%m%d%H%M%S')}"
                 if patched:
                     name += '_patched'
-            logging.info(f"Trying to run container from image {image_name}:{tag}")
-            image = self.client.images.get(f"{image_name}:{tag}")
+            img_name, img_tag = image.tags[0].split(':') if image.tags else (image.name, tag)
+            logging.info(f"Trying to run container from image {img_name}:{img_tag}")
+            image = self.client.images.get(f"{img_name}:{img_tag}")
             container = self.client.containers.run(
                 image=image,
                 detach=True,  # -d
@@ -191,7 +192,7 @@ class DockerHandle:
             )
             return container
         except Exception as e:
-            logging.error(f"Error running container from image {image_name}: {e}")
+            logging.error(f"Error running container from image {image.tags}: {e}")
             return None
 
     def run_by_dockerfile(self, dockerfile_path, image_name, name='', tag='latest'):
@@ -205,10 +206,10 @@ class DockerHandle:
         """
         try:
             if name == '':
-                if image_name.startswith('vrbench'):
+                if image_name.startswith('vulbench'):
                     name = f"{image_name}_{time.strftime('%Y%m%d%H%M%S')}"
                 else:
-                    name = f"vrbench_{image_name}_{time.strftime('%Y%m%d%H%M%S')}"
+                    name = f"vulbench_{image_name}_{time.strftime('%Y%m%d%H%M%S')}"
             build_dir = os.path.dirname(dockerfile_path)
             dockerfile_name = os.path.basename(dockerfile_path)
             logging.info(f"Trying to build and run container from {dockerfile_path} with image {image_name}:{tag}")
@@ -216,7 +217,7 @@ class DockerHandle:
                 path=build_dir,
                 dockerfile=dockerfile_name,
                 tag=f"{image_name}:{tag}",
-                labels={"maintainer": "vrbench"},
+                labels={"maintainer": "vulbench"},
                 rm=True,
                 forcerm=True
             )[0]
@@ -318,21 +319,21 @@ class DockerHandle:
         except Exception as e:
             logging.error(f"Error removing image {image_name}: {e}")
 
-    def remove_dangling_images(self, timeout=10, only_vrbench=True, image_id=''):
+    def remove_dangling_images(self, timeout=10, only_vulbench=True, image_id=''):
         """
         Remove dangling Docker images.
         :param timeout: Timeout in seconds to wait for dependent containers to stop.
-        :param only_vrbench: If True, only remove dangling images related to vrbench.
+        :param only_vulbench: If True, only remove dangling images related to vulbench.
         :param image_id: If specified, remove only the dangling image with this ID.
-        :return: True if all vrbench dangling images were removed, False otherwise.
+        :return: True if all vulbench dangling images were removed, False otherwise.
         """
         try:
-            def get_dangling(only_vrbench=only_vrbench):
-                if only_vrbench:
-                    dangling = self.client.images.list(name='vrbench', all=True,
-                                                       filters={'dangling': True, 'label': 'maintainer=vrbench'})
+            def get_dangling(only_vulbench=only_vulbench):
+                if only_vulbench:
+                    dangling = self.client.images.list(name='vulbench', all=True,
+                                                       filters={'dangling': True, 'label': 'maintainer=vulbench'})
                     if not dangling:
-                        logging.info("No VRBench dangling images found.")
+                        logging.info("No VulBench dangling images found.")
                 else:
                     dangling = self.client.images.list(filters={'dangling': True})
                     if not dangling:
@@ -347,7 +348,7 @@ class DockerHandle:
                     logging.error(f"Error retrieving image {image_id}: {e}")
                     dangling = []
             else:
-                dangling = get_dangling(only_vrbench)
+                dangling = get_dangling(only_vulbench)
 
             if not dangling:
                 return True
@@ -360,26 +361,26 @@ class DockerHandle:
                 self.client.images.remove(img.id, force=True)
                 logging.warning(f"Removed dangling image {img.id}")
 
-            dangling = get_dangling(only_vrbench)
+            dangling = get_dangling(only_vulbench)
 
-            if only_vrbench and len(dangling) != 0:
+            if only_vulbench and len(dangling) != 0:
                 for img in dangling:
                     try:
                         history = self.client.api.history(img.id)
                         for layer in history:
                             tags = layer.get("Tags", [])
                             if tags:
-                                if any(tag.startswith("vrbench_") for tag in tags if tag):
+                                if any(tag.startswith("vulbench_") for tag in tags if tag):
                                     containers = self.client.containers.list(all=True, filters={'ancestor': img.id})
                                     for c in containers:
                                         self.container_remove(c.id, timeout=timeout)
                                     self.client.images.remove(img.id, force=True)
-                                    logging.warning(f"Removed VRBench-related dangling image {img.id}")
+                                    logging.warning(f"Removed VulBench-related dangling image {img.id}")
                                     break
                     except Exception as e:
                         logging.warning(f"Error checking image {img.id}: {e}")
 
-            return len(get_dangling(only_vrbench)) == 0
+            return len(get_dangling(only_vulbench)) == 0
         except Exception as e:
             logging.error(f"Error removing dangling images: {e}")
             return False

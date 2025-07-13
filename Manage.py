@@ -134,22 +134,22 @@ class Manage:
         # copy the poc files to the container
         deployer.docker_handle.container_copy(container_id=container_ori.id,
                                               src_path=self.local_poc_path,
-                                              dest_path="/vrbench/poc")
+                                              dest_path="/vulbench/poc")
         deployer.docker_handle.container_copy(container_id=container_patched.id,
                                               src_path=self.local_poc_path,
-                                              dest_path="/vrbench/poc")
+                                              dest_path="/vulbench/poc")
 
         # run the lazy deploy script
         if lazy_deploy:
             logging.info("Running lazy deploy script in both containers, this may take a while... ")
-            deployer.docker_handle.container_exec(container_id=container_ori.id, command="bash /vrbench/vrb_deploy.sh")
+            deployer.docker_handle.container_exec(container_id=container_ori.id, command="bash /vulbench/vb_deploy.sh")
             deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                                  command="bash /vrbench/vrb_deploy.sh")
+                                                  command="bash /vulbench/vb_deploy.sh")
             logging.info("Lazy deploy script executed successfully in both containers.")
 
         # Run the POC in the original container
         output = deployer.docker_handle.container_exec(container_id=container_ori.id,
-                                                       command=f"python /vrbench/poc/{name}/run.py")
+                                                       command=f"python /vulbench/poc/{name}/run.py")
         logging.info(f"Output of POC execution: {output}")
 
         check_command = check_command
@@ -158,14 +158,14 @@ class Manage:
 
         # patch the container and run the POC in the patched container
         deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                              command=f"git apply /vrbench/{repo_name}.patch")
+                                              command=f"git apply /vulbench/{repo_name}.patch")
 
         output = deployer.docker_handle.container_exec(container_id=container_patched.id, command=check_command)
         logging.info(f"Output after patching: {output}")
 
         # Run the POC again after patching
         output = deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                                       command=f"python /vrbench/poc/{name}/run.py")
+                                                       command=f"python /vulbench/poc/{name}/run.py")
         logging.info(f"Output of POC execution after patching: {output}")
 
     def run_bench_by_name(self, name: str, patch: str):

@@ -6,9 +6,9 @@ import yaml
 import os
 import time
 
-vrb_dir = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(vrb_dir, 'config.yaml')
-log_dir = os.path.join(vrb_dir, 'Logs')
+vb_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(vb_dir, 'config.yaml')
+log_dir = os.path.join(vb_dir, 'Logs')
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 if not os.path.exists(config_path):
@@ -20,8 +20,8 @@ def load_config():
     Load the configuration file and return the configuration dictionary.
     """
     with open(config_path, 'r', encoding='utf-8') as f:
-        vrb_config = yaml.safe_load(f)
-    return vrb_config
+        vb_config = yaml.safe_load(f)
+    return vb_config
 
 
 def setup_logging():
@@ -52,16 +52,11 @@ def setup_logging():
         format=user_format,
         handlers=[
             logging.FileHandler(
-                os.path.join(log_dir, f"vrb_{time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))}.log")),
+                os.path.join(log_dir, f"vb_{time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))}.log")),
             logging.StreamHandler()
         ]
     )
     logger = logging.getLogger(__name__)
-    # logger.info("VRBench initialized.")
-    # logger.warning("test warning")
-    # logger.error("test error")
-    # logger.critical("test critical")
-    # logger.debug("test debug")
     return logger
 
 

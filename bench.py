@@ -5,7 +5,7 @@ import argparse
 from Invoke import Invoke
 
 
-parser = argparse.ArgumentParser(description="VRBench - A Benchmarking Tool for Vulnerability Repair")
+parser = argparse.ArgumentParser(description="VulBench - A Benchmarking Tool for Vulnerability Repair")
 parser.add_argument(
     "-n",
     "--new",

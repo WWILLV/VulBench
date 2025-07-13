@@ -412,7 +412,7 @@ class Deploy:
         if lazy_deploy:
             # Not executing the commands immediately, but adding them to the deployment script for later execution.
             logging.info(
-                "Lazy deploy is enabled. Other commands will be added to the `/vrbench/vrb_deploy.sh` but not executed.")
+                "Lazy deploy is enabled. Other commands will be added to the `/vulbench/vb_deploy.sh` but not executed.")
             new_commands = []
 
             def shell_quote_single(s: str) -> str:
@@ -421,14 +421,14 @@ class Deploy:
             for oc in other_commands:
                 oc = oc.strip()
                 quoted_oc = shell_quote_single(oc)
-                new_commands.extend([f"echo {quoted_oc} >> /vrbench/vrb_deploy.sh"])
+                new_commands.extend([f"echo {quoted_oc} >> /vulbench/vb_deploy.sh"])
 
             other_commands = new_commands
 
-            other_commands.extend(['chmod +x /vrbench/vrb_deploy.sh'])
+            other_commands.extend(['chmod +x /vulbench/vb_deploy.sh'])
 
         if environment == "":
-            environment = "ENV PATH=$PATH:/vrbench"
+            environment = "ENV PATH=$PATH:/vulbench"
         if cmd is None:
             cmd = ["/bin/bash"]
 
@@ -442,7 +442,7 @@ class Deploy:
             patch=patch
         )
 
-        dockerfile_path = os.path.join(self.space_path, f"vrbench_{os.path.basename(file_path)}.dockerfile")
+        dockerfile_path = os.path.join(self.space_path, f"vulbench_{os.path.basename(file_path)}.dockerfile")
         with open(dockerfile_path, 'w') as dockerfile:
             dockerfile.write(dockerfile_content)
             logging.info(f"Dockerfile written to {dockerfile_path}")
@@ -452,7 +452,7 @@ class Deploy:
                 commit = commit[:7]
             commit = '_' + commit
 
-        image_name = f"vrbench_{os.path.basename(file_path)}{commit}"
+        image_name = f"vulbench_{os.path.basename(file_path)}{commit}"
         container = self.docker_handle.run_by_dockerfile(dockerfile_path=dockerfile_path, image_name=image_name)
         if container is None:
             logging.error(f"Failed to create container from Dockerfile {dockerfile_path}.")

@@ -92,37 +92,37 @@ class Invoke:
             logging.info("[CLEAN] Cleaning Docker resources.")
             dh = DockerHandle()
 
-            # Clean up Docker containers related to VRBench
-            vrb_containers = dh.get_container_vrbench()
-            if vrb_containers:
-                all_containers = [container.name for container in vrb_containers if container.name]
-                print(f"{len(all_containers)} VRBench containers found: {all_containers}")
+            # Clean up Docker containers related to VulBench
+            vb_containers = dh.get_container_vulbench()
+            if vb_containers:
+                all_containers = [container.name for container in vb_containers if container.name]
+                print(f"{len(all_containers)} VulBench containers found: {all_containers}")
                 choice = input("Do you want to remove these containers? (y/n): ").strip().lower()
                 if choice == 'y':
-                    for container in vrb_containers:
+                    for container in vb_containers:
                         logging.warning(f"Removing container: {container.name}")
                         dh.container_remove(container.name)
                 else:
                     logging.info("Skipping container removal.")
             else:
-                logging.info("No VRBench containers found.")
+                logging.info("No VulBench containers found.")
 
-            # Clean up Docker images related to VRBench
-            vrb_images = dh.get_image_vrbench()
-            if vrb_images:
-                all_images = [image.tags[0] for image in vrb_images if image.tags]
-                print(f"{len(all_images)} VRBench images found: {all_images}")
+            # Clean up Docker images related to VulBench
+            vb_images = dh.get_image_vulbench()
+            if vb_images:
+                all_images = [image.tags[0] for image in vb_images if image.tags]
+                print(f"{len(all_images)} VulBench images found: {all_images}")
                 choice = input("Do you want to remove these images? (y/n): ").strip().lower()
                 if choice == 'y':
-                    for image in vrb_images:
+                    for image in vb_images:
                         logging.warning(f"Removing image: {image.tags[0]}")
                         dh.image_remove(image.tags[0])
                 else:
                     logging.info("Skipping image removal.")
             else:
-                logging.info("No VRBench images found.")
+                logging.info("No VulBench images found.")
 
-            dh.remove_dangling_images(only_vrbench=True)
+            dh.remove_dangling_images(only_vulbench=True)
 
         def clean_log():
             logging.info("[CLEAN] Cleaning logs.")
@@ -146,11 +146,11 @@ class Invoke:
     @staticmethod
     def new_poc(name: str):
         """
-        Create a new POC of VRBench.
+        Create a new POC of VulBench.
         :param name: The name of the new POC.
         :return:
         """
-        logging.info(f"Creating a new VRBench POC: {name}")
+        logging.info(f"Creating a new VulBench POC: {name}")
         deployer = Deploy()
         sample = os.path.join(os.path.dirname(__file__), 'Data', 'poc', 'sample')
         new_poc_dir = os.path.join(os.path.dirname(__file__), 'Data', 'poc', name)
@@ -170,7 +170,7 @@ class Invoke:
             logging.error(f"New POC '{name}' creation failed.")
 
     def start(self):
-        logging.info("VRBench initialized.")
+        logging.info("VulBench initialized.")
         fun_args = self.parse_args()
         if fun_args is None:
             return

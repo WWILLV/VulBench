@@ -47,18 +47,18 @@ def get_dockerfile(py_version="", file_path="", dependencies=None, other_command
         patch_name = os.path.basename(patch)
         shutil.copy(patch, os.path.join(file_path, patch_name))
         if apply_patch:
-            do_patch = f"git apply /vrbench/{patch_name}\n"
+            do_patch = f"git apply /vulbench/{patch_name}\n"
 
     base_dockerfile = f"""
 FROM python:{py_version}
 
 USER root
 
-RUN mkdir /vrbench
+RUN mkdir /vulbench
 
-WORKDIR /vrbench
+WORKDIR /vulbench
 
-COPY {file_path}/ /vrbench/
+COPY {file_path}/ /vulbench/
 
 RUN apt-get update \\
     && apt-get install -y --no-install-recommends build-essential libssl-dev libffi-dev {dependencies} \\
