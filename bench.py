@@ -18,7 +18,7 @@ parser.add_argument(
     "--clean",
     type=str,
     metavar="all,log,docker,workspace",
-    help="Clean VRBench. Specify 'all' to clean all, or provide a specific type (log,docker,workspace)."
+    help="Clean VulBench. Specify 'all' to clean all, or provide a specific type (log,docker,workspace)."
 )
 parser.add_argument(
     "-s",
@@ -40,10 +40,10 @@ if not any(vars(parser.parse_args()).values()):
     exit(0)
 
 try:
-    vrbench = Invoke(parser.parse_args())
-    vrbench.start()
+    vbench = Invoke(parser.parse_args())
+    vbench.start()
 except KeyboardInterrupt:
-    print("[VRBench] Interrupted by user.")
+    print("[VulBench] Interrupted by user.")
     print("Have a nice day!")
 except Exception as e:
     print(f"Top-level exception occurred: {e}")
