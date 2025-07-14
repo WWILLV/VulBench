@@ -262,6 +262,17 @@ class Deploy:
                     install_commands.append("hatch env create")
                     pkg_installed_info.append(
                         {"name": pkg_name, "path": file_full_path, "type": "hatch", "cmd": install_commands})
+                elif '[build-system]' in content and 'setuptools.build_meta' in content:
+                    install_commands.append("pip install build")
+                    install_commands.append("python -m build")
+                    install_commands.append("pip install .")
+                    pkg_installed_info.append(
+                        {"name": pkg_name, "path": file_full_path, "type": "build", "cmd": install_commands})
+                # elif '[tool.uv]' in content or 'uv.core.masonry.api' in content:
+                #     install_commands.append("pip install uv")
+                #     install_commands.append("uv install --no-interaction --no-ansi --no-root")
+                #     pkg_installed_info.append(
+                #         {"name": pkg_name, "path": file_full_path, "type": "uv", "cmd": install_commands})
                 else:
                     logging.warning(f"Unsupported pyproject.toml format in {file_full_path}.")
                     logging.warning(f"Will check for other installation methods.")

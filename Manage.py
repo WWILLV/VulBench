@@ -4,6 +4,7 @@ __author__ = 'WILL_V'
 import json
 import os
 import logging
+import concurrent.futures
 from Docker.Deploy import Deploy
 from Docker.DockerHandle import DockerHandle
 
@@ -161,9 +162,18 @@ class Manage:
         # run the lazy deploy script
         if lazy_deploy:
             logging.info("Running lazy deploy script in both containers, this may take a while... ")
-            deployer.docker_handle.container_exec(container_id=container_ori.id, command="bash /vulbench/vb_deploy.sh")
-            deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                                  command="bash /vulbench/vb_deploy.sh")
+            # deployer.docker_handle.container_exec(container_id=container_ori.id, command="bash /vulbench/vb_deploy.sh")
+            # deployer.docker_handle.container_exec(container_id=container_patched.id,
+            #                                       command="bash /vulbench/vb_deploy.sh")
+            # Use ThreadPoolExecutor to run the lazy deploy script in both containers concurrently
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                futures = [
+                    executor.submit(deployer.docker_handle.container_exec, container_ori.id,
+                                    "bash /vulbench/vb_deploy.sh"),
+                    executor.submit(deployer.docker_handle.container_exec, container_patched.id,
+                                    "bash /vulbench/vb_deploy.sh")
+                ]
+                concurrent.futures.wait(futures)
             logging.info("Lazy deploy script executed successfully in both containers.")
 
         logging.info("Running POC...")
