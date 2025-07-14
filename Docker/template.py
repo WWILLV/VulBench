@@ -68,7 +68,7 @@ RUN apt-get update \\
 {do_patch}
 
 # Initialize the environment
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools wheel build
 {ocs}
 
 {environment}

@@ -147,6 +147,17 @@ class Manage:
                                               src_path=patch_path,
                                               dest_path=f"/vulbench/{repo_name}.patch")
 
+        # check_command = check_command
+        output = deployer.docker_handle.container_exec(container_id=container_ori.id, command=check_command)
+        logging.info(f"Output before patching: \n{output.strip()}")
+
+        # patch the container and run the POC in the patched container
+        deployer.docker_handle.container_exec(container_id=container_patched.id,
+                                              command=f"git apply /vulbench/{repo_name}.patch")
+
+        output = deployer.docker_handle.container_exec(container_id=container_patched.id, command=check_command)
+        logging.info(f"Output after patching: \n{output.strip()}")
+
         # run the lazy deploy script
         if lazy_deploy:
             logging.info("Running lazy deploy script in both containers, this may take a while... ")
@@ -159,23 +170,12 @@ class Manage:
         # Run the POC in the original container
         output = deployer.docker_handle.container_exec(container_id=container_ori.id,
                                                        command=f"python /vulbench/poc/{name}/run.py")
-        logging.info(f"Output of POC execution: {output.strip()}")
-
-        check_command = check_command
-        output = deployer.docker_handle.container_exec(container_id=container_ori.id, command=check_command)
-        logging.info(f"Output before patching: {output.strip()}")
-
-        # patch the container and run the POC in the patched container
-        deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                              command=f"git apply /vulbench/{repo_name}.patch")
-
-        output = deployer.docker_handle.container_exec(container_id=container_patched.id, command=check_command)
-        logging.info(f"Output after patching: {output.strip()}")
+        logging.info(f"Output of POC execution: \n{output.strip()}")
 
         # Run the POC again after patching
         output = deployer.docker_handle.container_exec(container_id=container_patched.id,
                                                        command=f"python /vulbench/poc/{name}/run.py")
-        logging.info(f"Output of POC execution after patching: {output.strip()}")
+        logging.info(f"Output of POC execution after patching: \n{output.strip()}")
 
         # Get vb_poc_result.json from the both container
         result_dir = os.path.join(deployer.space_path, f"result")
