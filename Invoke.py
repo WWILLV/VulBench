@@ -182,6 +182,7 @@ class Invoke:
                     issue["python_version"] = ""
                     issue["check_command"] = ""
                     issue["run_kwargs"] = {}
+                    issue["type"] = ""
                     issue["poc"]["exists"] = True
                     issue["poc"]["type"] = "executable"
                     issue["poc"]["available"] = False
@@ -211,15 +212,29 @@ class Invoke:
                 with open(info_path, 'r', encoding='utf-8') as f:
                     info_data = json.load(f)
 
+                # Check if the info data already exists for the library name, if so, update it
                 update_flag = False
-                for idata in info_data:
-                    if idata.get("library_name", "").lower().strip() == info["library_name"].lower().strip():
-                        logging.info(f"Info data for '{name}' already exists, updating it.")
-                        idata = info
+                for i in range(len(info_data)):
+                    if info_data[i].get("library_name", "").lower().strip() == info["library_name"].lower().strip():
+                        logging.info(f"Info data for '{name}' already exists, updating security issues.")
+                        all_public_id = list(map(lambda x: x.get("public_id", "").lower().strip(),
+                                                 info_data[i].get("security_issues", [])))
+                        if name.lower().strip() not in all_public_id:
+                            for issue in info["security_issues"]:
+                                if issue.get("public_id", "").lower().strip() == name.lower().strip():
+                                    info_data[i]["security_issues"].append(issue)
+                                    logging.info(f"Added new security issue for '{name}' to info data.")
+                        else:
+                            logging.info(f"Security issue for '{name}' already exists in info data, skipping update.")
                         update_flag = True
                         break
                 if not update_flag:
-                    info_data.append(info)
+                    idata = info.copy()
+                    idata["security_issues"] = []
+                    for issue in info["security_issues"]:
+                        if issue.get("public_id", "").lower().strip() == name.lower().strip():
+                            idata["security_issues"].append(issue)
+                    info_data.append(idata)
 
                 with open(info_path, 'w', encoding='utf-8') as f:
                     json.dump(info_data, f, indent=4, ensure_ascii=False)
