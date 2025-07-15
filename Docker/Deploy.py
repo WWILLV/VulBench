@@ -265,7 +265,7 @@ class Deploy:
                 elif '[build-system]' in content and 'setuptools.build_meta' in content:
                     install_commands.append("pip install build")
                     install_commands.append("python -m build")
-                    install_commands.append("pip install .")
+                    install_commands.append("pip install -e .")
                     pkg_installed_info.append(
                         {"name": pkg_name, "path": file_full_path, "type": "build", "cmd": install_commands})
                 # elif '[tool.uv]' in content or 'uv.core.masonry.api' in content:
@@ -283,6 +283,7 @@ class Deploy:
                 break
             if file == 'setup.py':
                 install_commands.append("python setup.py install")
+                install_commands.append("pip install -e .")
                 pkg_installed_info.append(
                     {"name": pkg_name, "path": file_full_path, "type": "setup", "cmd": install_commands})
                 break
@@ -464,7 +465,7 @@ class Deploy:
             patch=patch
         )
 
-        dockerfile_path = os.path.join(self.space_path, f"vulbench_{os.path.basename(file_path)}.dockerfile")
+        dockerfile_path = os.path.join(self.space_path, f"vulbench_{os.path.basename(file_path)}.dockerfile".lower())
         with open(dockerfile_path, 'w') as dockerfile:
             dockerfile.write(dockerfile_content)
             logging.info(f"Dockerfile written to {dockerfile_path}")
@@ -474,7 +475,7 @@ class Deploy:
                 commit = commit[:7]
             commit = '_' + commit
 
-        image_name = f"vulbench_{os.path.basename(file_path)}{commit}"
+        image_name = f"vulbench_{os.path.basename(file_path)}{commit}".lower()
         container = self.docker_handle.run_by_dockerfile(dockerfile_path=dockerfile_path, image_name=image_name, run_kwargs=run_kwargs)
         if container is None:
             logging.error(f"Failed to create container from Dockerfile {dockerfile_path}.")
