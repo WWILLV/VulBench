@@ -11,7 +11,7 @@ parser.add_argument(
     "--new",
     type=str,
     metavar="poc_name",
-    help="Add a new POC."
+    help="Add a new PoC."
 )
 parser.add_argument(
     "-c",
@@ -21,11 +21,11 @@ parser.add_argument(
     help="Clean VulBench. Specify 'all' to clean all, or provide a specific type (log,docker,workspace)."
 )
 parser.add_argument(
-    "-s",
+    "-r",
     "--run",
     type=str,
     metavar="poc_name",
-    help="Run a POC test. Specify the poc name to run it."
+    help="Run a PoC test. Specify the poc name to run it."
 )
 parser.add_argument(
     "-p",
