@@ -1,0 +1,1093 @@
+[
+    {
+        "library_name": "jwcrypto",
+        "version_number": "0.2.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/latchset/jwcrypto",
+        "security_issues": [
+            {
+                "public_id": "CVE-2024-28102",
+                "type": "DoS",
+                "python_version": "3.9",
+                "check_command": "awk \"NR>=12 && NR<=18\" jwcrypto/jwe.py",
+                "patch_commits": [
+                    {
+                        "commit_hash": "90477a3b6e73da69740e00b8161f53fea19b83",
+                        "commit_url": "https://github.com/latchset/jwcrypto/commit/90477a3b6e73da69740e00b8161f53fea19b83.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "available": true,
+                    "url": [
+                        "https://github.com/latchset/jwcrypto/security/advisories/GHSA-j857-7rvv-vj97",
+                        "https://www.vicarius.io/vsociety/posts/denial-of-service-vulnerability-discovered-in-jwcrypto-cve-2024-28102-28103"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "library_name": "sqlparse",
+        "version_number": "0.4.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/andialbrecht/sqlparse",
+        "security_issues": [
+            {
+                "public_id": "CVE-2024-4340",
+                "type": "DoS",
+                "python_version": "3.9",
+                "check_command": "awk \"NR>=210 && NR<=222\" sqlparse/sql.py",
+                "patch_commits": [
+                    {
+                        "commit_hash": "b4a39d9850969b4e1d6940d32094ee0b42a2cf",
+                        "commit_url": "https://github.com/andialbrecht/sqlparse/commit/b4a39d9850969b4e1d6940d32094ee0b42a2cf.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "available": true,
+                    "url": [
+                        "https://research.jfrog.com/vulnerabilities/sqlparse-stack-exhaustion-dos-jfsa-2024-001031292/"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "library_name": "langchain",
+        "version_number": "0.0.37",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/langchain-ai/langchain",
+        "security_issues": [
+            {
+                "public_id": "CVE-2024-3571",
+                "type": "Command Injection",
+                "python_version": "3.11",
+                "check_command": "awk \"NR>=58 && NR<=68\" libs/langchain/langchain/storage/file_system.py",
+                "patch_commits": [
+                    {
+                        "commit_hash": "aad3d8bd47d7f5598156ff2bdcc8f736f24a74",
+                        "commit_url": "https://github.com/langchain-ai/langchain/commit/aad3d8bd47d7f5598156ff2bdcc8f736f24a74.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "available": true,
+                    "url": [
+                        "https://huntr.com/bounties/2df3acdc-ee4f-4257-bbf8-a7de3870a9d8"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "library_name": "dash",
+        "version_number": "0.27.0rc9",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/plotly/dash",
+        "security_issues": [
+            {
+                "public_id": "CVE-2024-21485",
+                "type": "XSS",
+                "python_version": "3.11",
+                "check_command": "awk \"NR>=58 && NR<=68\" libs/langchain/langchain/storage/file_system.py",
+                "patch_commits": [
+                    {
+                        "commit_hash": "9920073c9a8619ae8f90fcec1924f2f3a4332a",
+                        "commit_url": "https://github.com/plotly/dash/commit/9920073c9a8619ae8f90fcec1924f2f3a4332a.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "available": false,
+                    "url": [
+                        "https://security.snyk.io/vuln/SNYK-JS-DASHCORECOMPONENTS-6183084",
+                        "https://security.snyk.io/vuln/SNYK-JS-DASHHTMLCOMPONENTS-6226337",
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-DASH-6226335",
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-DASHCORECOMPONENTS-6226334",
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-DASHHTMLCOMPONENTS-6226336"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "library_name": "cbor2",
+        "version_number": "5.6.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/agronholm/cbor2",
+        "security_issues": [
+            {
+                "public_id": "CVE-2024-26134",
+                "type": "DoS",
+                "python_version": "3.10",
+                "check_command": "awk \"NR>=310 && NR<=321\" cbor2/_decoder.py",
+                "run_kwargs": {
+                    "mem_limit": "64m",
+                    "cpuset_cpus": "1"
+                },
+                "patch_commits": [
+                    {
+                        "commit_hash": "387755eacf0be35591a478d3c67fe10618a6d5",
+                        "commit_url": "https://github.com/agronholm/cbor2/commit/387755eacf0be35591a478d3c67fe10618a6d5.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "available": false,
+                    "url": [
+                        "https://github.com/agronholm/cbor2/security/advisories/GHSA-375g-39jq-vq7m"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "library_name": "mjml",
+        "version_number": "0.10.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/FelixSchwarz/mjml-python",
+        "security_issues": [
+            {
+                "public_id": "CVE-2024-26151",
+                "type": "SSTI",
+                "patch_commits": [
+                    {
+                        "commit_hash": "8d410b7a500703080bb14ed7e3d2663fe16767",
+                        "commit_url": "https://github.com/FelixSchwarz/mjml-python/commit/8d410b7a500703080bb14ed7e3d2663fe16767.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://www.vicarius.io/vsociety/posts/cve-2024-26151-mjml-python-vulnerability-1"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.10",
+                "check_command": "awk \"NR>=18 && NR<=24\" mjml/elements/head/mj_style.py",
+                "run_kwargs": {}
+            }
+        ]
+    },
+    {
+        "library_name": "black",
+        "version_number": "19.10b0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/psf/black",
+        "security_issues": [
+            {
+                "public_id": "CVE-2024-21503",
+                "type": "DoS",
+                "patch_commits": [
+                    {
+                        "commit_hash": "f00093672628d212b8965a8993cee8bedf5fe9",
+                        "commit_url": "https://github.com/psf/black/commit/f00093672628d212b8965a8993cee8bedf5fe9.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-BLACK-6256273"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.9",
+                "check_command": "awk \"NR>=53 && NR<=64\" src/black/strings.py",
+                "run_kwargs": {}
+            }
+        ]
+    },
+    {
+        "library_name": "urllib3",
+        "version_number": "0.4.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/urllib3/urllib3",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-43804",
+                "patch_commits": [
+                    {
+                        "commit_hash": "644124ecd0b6e417c527191f866daa05a5a205",
+                        "commit_url": "https://github.com/urllib3/urllib3/commit/644124ecd0b6e417c527191f866daa05a5a205.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://www.vicarius.io/vsociety/posts/cve-2023-43804-urllib3-vulnerability-3"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.9",
+                "check_command": "awk \"NR>=189 && NR<=191\" src/urllib3/util/retry.py",
+                "run_kwargs": {},
+                "type": "Information Disclosure"
+            }
+        ]
+    },
+    {
+        "library_name": "tensorflow",
+        "version_number": "1.10.0rc1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/tensorflow/tensorflow",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-25669",
+                "patch_commits": [
+                    {
+                        "commit_hash": "1295ae4dbb52fe06b19733b0257e2340d7b63b",
+                        "commit_url": "https://github.com/tensorflow/tensorflow/commit/1295ae4dbb52fe06b19733b0257e2340d7b63b.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/tensorflow/tensorflow/security/advisories/GHSA-rcf8-g8jv-vg6p"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.6",
+                "check_command": "awk \"NR>=47 && NR<=57\" tensorflow/compiler/tf2xla/kernels/pooling_ops.cc",
+                "run_kwargs": {},
+                "type": "Floating Point Exception",
+                "deploy_command": [
+                    "pip install tensorflow==1.10.0rc1"
+                ]
+            }
+        ]
+    },
+    {
+        "library_name": "cryptography",
+        "version_number": "3.1.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/pyca/cryptography",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-49083",
+                "patch_commits": [
+                    {
+                        "commit_hash": "1e7b4d074e14c4e694d3ce69ad6754a6039fd6",
+                        "commit_url": "https://github.com/pyca/cryptography/commit/1e7b4d074e14c4e694d3ce69ad6754a6039fd6.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/pyca/cryptography/security/advisories/GHSA-jfhm-5ghh-2f97"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.7",
+                "check_command": "awk \"NR>=1114 && NR<=1117\" src/cryptography/hazmat/backends/openssl/backend.py",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "curl https://sh.rustup.rs -sSf | sh -s -- -y",
+                    "rustup default stable",
+                    "source \"$HOME/.cargo/env\"",
+                    "pip install ."
+                ],
+                "type": "Segmentation Fault"
+            }
+        ]
+    },
+    {
+        "library_name": "aiohttp",
+        "version_number": "0.8.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/aio-libs/aiohttp",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-49081",
+                "patch_commits": [
+                    {
+                        "commit_hash": "53476dfd4ef4fb1bb74a267714bbc39eda71b4",
+                        "commit_url": "https://github.com/aio-libs/aiohttp/commit/53476dfd4ef4fb1bb74a267714bbc39eda71b4.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://gist.github.com/jnovikov/184afb593d9c2114d77f508e0ccd508e"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=709 && NR<=710\" aiohttp/client_reqrep.py",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "git submodule update --init",
+                    "make"
+                ],
+                "type": "CRLF Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "mlflow",
+        "version_number": "0.8.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/mlflow/mlflow",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-2356",
+                "patch_commits": [
+                    {
+                        "commit_hash": "f73147496e05c09a8b83d95fb4f1bf86696c63",
+                        "commit_url": "https://github.com/mlflow/mlflow/commit/f73147496e05c09a8b83d95fb4f1bf86696c63.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://huntr.dev/bounties/7b5d130d-38eb-4133-8c7d-0dfc9a9d9896"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=1326 && NR<=1340\" mlflow/server/handlers.py",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "pip install -e ."
+                ],
+                "type": "Local File Inclusion"
+            },
+            {
+                "public_id": "CVE-2023-3765",
+                "patch_commits": [
+                    {
+                        "commit_hash": "6dde93758d42455cb90ef324407919ed67668b",
+                        "commit_url": "https://github.com/mlflow/mlflow/commit/6dde93758d42455cb90ef324407919ed67668b.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://huntr.dev/bounties/4be5fd63-8a0a-490d-9ee1-f33dc768ed76"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=146 && NR<=160\" mlflow/pyfunc/backend.py",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "pip install -e ."
+                ],
+                "type": "Path Traversal"
+            }
+        ]
+    },
+    {
+        "library_name": "pymdown_extensions",
+        "version_number": "4.11",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/facelessuser/pymdown-extensions",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-32309",
+                "patch_commits": [
+                    {
+                        "commit_hash": "b7bb4878d6017c03c8dc97c42d8d3bb6ee81db",
+                        "commit_url": "https://github.com/facelessuser/pymdown-extensions/commit/b7bb4878d6017c03c8dc97c42d8d3bb6ee81db.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/facelessuser/pymdown-extensions/security/advisories/GHSA-jh85-wwv9-24hv"
+                    ],
+                    "available": true
+                },
+                "python_version": "",
+                "check_command": "awk \"NR>=162 && NR<=169\" pymdownx/snippets.py",
+                "run_kwargs": {},
+                "type": "Arbitrary File Read"
+            }
+        ]
+    },
+    {
+        "library_name": "geonode",
+        "version_number": "2.7",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/GeoNode/geonode",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-26043",
+                "patch_commits": [
+                    {
+                        "commit_hash": "2fdfe919f299b21f1609bf898f9dcfde58770a",
+                        "commit_url": "https://github.com/GeoNode/geonode/commit/2fdfe919f299b21f1609bf898f9dcfde58770a.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/GeoNode/geonode/security/advisories/GHSA-mcmc-c59m-pqq8"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.7",
+                "check_command": "",
+                "run_kwargs": {},
+                "type": "Arbitrary File Read"
+            }
+        ]
+    },
+    {
+        "library_name": "pydash",
+        "version_number": "4.2.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/dgilland/pydash",
+        "security_issues": [
+            {
+                "public_id": "CVE-2023-26145",
+                "patch_commits": [
+                    {
+                        "commit_hash": "6ff0831ad285fff937cafd2a853f20cc9ae920",
+                        "commit_url": "https://github.com/dgilland/pydash/commit/6ff0831ad285fff937cafd2a853f20cc9ae920.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://gist.github.com/CalumHutton/45d33e9ea55bf4953b3b31c84703dfca",
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-PYDASH-5916518"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.7",
+                "check_command": "awk \"NR>=190 && NR<=194\" src/pydash/helpers.py",
+                "run_kwargs": {},
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "pyjwt",
+        "version_number": "1.6.3",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/jpadilla/pyjwt",
+        "security_issues": [
+            {
+                "public_id": "CVE-2022-29217",
+                "patch_commits": [
+                    {
+                        "commit_hash": "9c528670c455b8d948aff95ed50e22940d1ad3",
+                        "commit_url": "https://github.com/jpadilla/pyjwt/commit/9c528670c455b8d948aff95ed50e22940d1ad3.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/jpadilla/pyjwt/security/advisories/GHSA-ffqj-6fqr-9h24",
+                        "https://www.vicarius.io/vsociety/posts/risky-algorithms-algorithm-confusion-in-pyjwt-cve-2022-29217"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.7",
+                "check_command": "awk \"NR>=186 && NR<=193\" jwt/algorithms.py",
+                "run_kwargs": {},
+                "type": "Algorithm Confusion"
+            }
+        ]
+    },
+    {
+        "library_name": "cookiecutter",
+        "version_number": "1.7.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/cookiecutter/cookiecutter",
+        "security_issues": [
+            {
+                "public_id": "CVE-2022-24065",
+                "patch_commits": [
+                    {
+                        "commit_hash": "fdffddb31fd2b46344dfa317531ff155e7999f",
+                        "commit_url": "https://github.com/cookiecutter/cookiecutter/commit/fdffddb31fd2b46344dfa317531ff155e7999f.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://snyk.io/vuln/SNYK-PYTHON-COOKIECUTTER-2414281"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.9",
+                "check_command": "awk \"NR>=101 && NR<=104\" cookiecutter/vcs.py",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "pip install -e ."
+                ],
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "rdiffweb",
+        "version_number": "2.0.1b2",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/ikus060/rdiffweb",
+        "security_issues": [
+            {
+                "public_id": "CVE-2022-3221",
+                "patch_commits": [
+                    {
+                        "commit_hash": "9125f5a2d918fed0f3fc1c86fa94cd1779ed9f",
+                        "commit_url": "https://github.com/ikus060/rdiffweb/commit/9125f5a2d918fed0f3fc1c86fa94cd1779ed9f.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://huntr.dev/bounties/1fa1aac9-b16a-4a70-a7da-960b3908ae1d"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.9",
+                "check_command": "awk \"NR>=114 && NR<=117\" rdiffweb/controller/pref_sshkeys.py",
+                "run_kwargs": {},
+                "type": "SSRF"
+            },
+            {
+                "public_id": "CVE-2022-3232",
+                "patch_commits": [
+                    {
+                        "commit_hash": "422791ea45713aaaa865bdca74addb9fffd93a",
+                        "commit_url": "https://github.com/ikus060/rdiffweb/commit/422791ea45713aaaa865bdca74addb9fffd93a.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://huntr.dev/bounties/15c8fd98-7f50-4d46-b013-42710af1f99c"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.9",
+                "check_command": "awk \"NR>=193 && NR<=199\" rdiffweb/controller/page_admin.py",
+                "run_kwargs": {},
+                "type": "CSRF"
+            }
+        ]
+    },
+    {
+        "library_name": "joblib",
+        "version_number": "0.14.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/joblib/joblib",
+        "security_issues": [
+            {
+                "public_id": "CVE-2022-21797",
+                "patch_commits": [
+                    {
+                        "commit_hash": "54f4d21f098591c77b48c9acfffaa4cf0a4528",
+                        "commit_url": "https://github.com/joblib/joblib/commit/54f4d21f098591c77b48c9acfffaa4cf0a4528.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-JOBLIB-3027033"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=1054 && NR<=1057\" joblib/parallel.py",
+                "run_kwargs": {},
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "gitpython",
+        "version_number": "2.1.3",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/gitpython-developers/GitPython",
+        "security_issues": [
+            {
+                "public_id": "CVE-2022-24439",
+                "patch_commits": [
+                    {
+                        "commit_hash": "678a8fe08dd466fcfe8676294b528879551389",
+                        "commit_url": "https://github.com/gitpython-developers/GitPython/commit/678a8fe08dd466fcfe8676294b528879551389.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-GITPYTHON-3113858"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=265 && NR<=266\" git/cmd.py",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "apt update && apt remove -y git",
+                    "apt install -y build-essential libssl-dev libcurl4-gnutls-dev libexpat1-dev zlib1g-dev gettext",
+                    "wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.35.1.tar.gz",
+                    "tar -xzf git-2.35.1.tar.gz && cd git-2.35.1",
+                    "./configure --prefix=/usr/local && make && make install",
+                    "cd .. && rm -rf git-2.35.1 git-2.35.1.tar.gz",
+                    "pip install -e ."
+                ],
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "onnx",
+        "version_number": "1.10.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/onnx/onnx",
+        "security_issues": [
+            {
+                "public_id": "CVE-2022-25882",
+                "patch_commits": [
+                    {
+                        "commit_hash": "f369b0e859024095d721f1d1612da5a8fa3898",
+                        "commit_url": "https://github.com/onnx/onnx/commit/f369b0e859024095d721f1d1612da5a8fa3898.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://gist.github.com/jnovikov/02a9aff9bf2188033e77bd91ff062856",
+                        "https://security.snyk.io/vuln/SNYK-PYTHON-ONNX-2395479"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=130 && NR<=143\" onnx/checker.cc",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "apt update && apt install -y protobuf-compiler libprotobuf-dev cmake pybind11-dev",
+                    "mkdir build && cd build",
+                    "cmake ..",
+                    "make -j$(nproc)",
+                    "cd ..",
+                    "python setup.py build",
+                    "pip install ."
+                ],
+                "type": "Directory Traversal"
+            }
+        ]
+    },
+    {
+        "library_name": "salt",
+        "version_number": "2014.1.12",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/twangboy/salt",
+        "security_issues": [
+            {
+                "public_id": "CVE-2021-25282",
+                "patch_commits": [
+                    {
+                        "commit_hash": "da381954425e1e1d5b807ff1156090847c5d16",
+                        "commit_url": "https://github.com/saltstack/salt/commit/da381954425e1e1d5b807ff1156090847c5d16.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "http://packetstormsecurity.com/files/162058/SaltStack-Salt-API-Unauthenticated-Remote-Command-Execution.html"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=107 && NR<=107\" salt/wheel/pillar_roots.py",
+                "run_kwargs": {},
+                "deploy_command": [
+                    "apt update && apt install -y python3-pam --no-install-recommends",
+                    "mkdir -p /etc/salt/",
+                    "printf '\\\n\\n\\\nuser: root\\n\\\n\\n\\\n\\n\\\npidfile: /var/run/salt-master.pid\\n\\\nroot_dir: /\\n\\\npublish_port: 4505\\n\\\nret_port: 4506\\n\\\n\\n\\\nfile_roots:\\n\\\n  base:\\n\\\n    - /srv/salt\\n\\\n\\n\\\npillar_roots:\\n\\\n  base:\\n\\\n    - /srv/pillar\\n\\\n\\n\\\nextension_modules: /var/cache/salt/master/extmods\\n\\\n\\n\\\nrest_cherrypy:\\n\\\n  host: 0.0.0.0\\n\\\n  port: 8000\\n\\\n  disable_ssl: True\\n\\\n\\n\\\nexternal_auth:\\n\\\n  pam:\\n\\\n    root:\\n\\\n      - \".*\"\\n' > /etc/salt/master",
+                    "mkdir -p /var/cache/salt/master/extmods/grains",
+                    "pip install towncrier",
+                    "towncrier build",
+                    "pip install -e ."
+                ],
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "mechanize",
+        "version_number": "0.4.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/python-mechanize/mechanize",
+        "security_issues": [
+            {
+                "public_id": "CVE-2021-32837",
+                "patch_commits": [
+                    {
+                        "commit_hash": "dd05334448e9f39814bab044d2eaa5ef69b410",
+                        "commit_url": "https://github.com/python-mechanize/mechanize/commit/dd05334448e9f39814bab044d2eaa5ef69b410.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://securitylab.github.com/advisories/GHSL-2021-108-python-mechanize-mechanize/"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.7",
+                "check_command": "awk \"NR>=878 && NR<=886\" mechanize/_urllib2_fork.py",
+                "run_kwargs": {},
+                "type": "DoS"
+            }
+        ]
+    },
+    {
+        "library_name": "mpmath",
+        "version_number": "0.17",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/fredrik-johansson/mpmath",
+        "security_issues": [
+            {
+                "public_id": "CVE-2021-29063",
+                "patch_commits": [
+                    {
+                        "commit_hash": "46d44c3c8f3244017fe1eb102d564eb4ab8ef7",
+                        "commit_url": "https://github.com/fredrik-johansson/mpmath/commit/46d44c3c8f3244017fe1eb102d564eb4ab8ef7.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/yetingli/PoCs/blob/main/CVE-2021-29063/Mpmath.md"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.7",
+                "check_command": "awk \"NR>=45 && NR<=46\" mpmath/ctx_mp.py",
+                "run_kwargs": {},
+                "type": "DoS"
+            }
+        ]
+    },
+    {
+        "library_name": "bleach",
+        "version_number": "2.1.2",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/mozilla/bleach",
+        "security_issues": [
+            {
+                "public_id": "CVE-2021-23980",
+                "patch_commits": [
+                    {
+                        "commit_hash": "1334134d34397966a7f7cfebd38639e9ba2c68",
+                        "commit_url": "https://github.com/mozilla/bleach/commit/1334134d34397966a7f7cfebd38639e9ba2c68.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://bugzilla.mozilla.org/show_bug.cgi?id=CVE-2021-23980",
+                        "https://github.com/mozilla/bleach/security/advisories/GHSA-vv2x-vrpj-qqpq"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.7",
+                "check_command": "awk \"NR>=374 && NR<=377\" bleach/sanitizer.py",
+                "run_kwargs": {},
+                "type": "XSS"
+            }
+        ]
+    },
+    {
+        "library_name": "twisted",
+        "version_number": "19.2.0",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/twisted/twisted",
+        "security_issues": [
+            {
+                "public_id": "CVE-2020-10109",
+                "patch_commits": [
+                    {
+                        "commit_hash": "4a7d22e490bb8ff836892cc99a1f54b85ccb02",
+                        "commit_url": "https://github.com/twisted/twisted/commit/4a7d22e490bb8ff836892cc99a1f54b85ccb02.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://know.bishopfox.com/advisories/twisted-version-19.10.0"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.6",
+                "check_command": "awk \"NR>=2174 && NR<=2180\" src/twisted/web/http.py",
+                "run_kwargs": {},
+                "type": "Request Smuggling"
+            }
+        ]
+    },
+    {
+        "library_name": "httpie",
+        "version_number": "0.4.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/jakubroztocil/httpie",
+        "security_issues": [
+            {
+                "public_id": "CVE-2019-10751",
+                "patch_commits": [
+                    {
+                        "commit_hash": "df36d6255df5793129b02ac82f1010171bd8a0",
+                        "commit_url": "https://github.com/jakubroztocil/httpie/commit/df36d6255df5793129b02ac82f1010171bd8a0.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://snyk.io/vuln/SNYK-PYTHON-HTTPIE-460107"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.8",
+                "check_command": "awk \"NR>=247 && NR<=252\" httpie/downloads.py",
+                "run_kwargs": {},
+                "type": "Open Redirect"
+            }
+        ]
+    },
+    {
+        "library_name": "codecov",
+        "version_number": "0.4.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/codecov/codecov-python",
+        "security_issues": [
+            {
+                "public_id": "CVE-2019-10800",
+                "patch_commits": [
+                    {
+                        "commit_hash": "2a80aa434f74feb31242b6f213b75ce63ae979",
+                        "commit_url": "https://github.com/codecov/codecov-python/commit/2a80aa434f74feb31242b6f213b75ce63ae979.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://snyk.io/vuln/SNYK-PYTHON-CODECOV-552149"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.7",
+                "check_command": "awk \"NR>=627 && NR<=635\" codecov/__init__.py",
+                "run_kwargs": {},
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "pycryptodome",
+        "version_number": "3.4.4",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/Legrandin/pycryptodome",
+        "security_issues": [
+            {
+                "public_id": "CVE-2018-15560",
+                "patch_commits": [
+                    {
+                        "commit_hash": "d1739c62b9b845f8a5b342de08d6bf6e2722d24",
+                        "commit_url": "https://github.com/Legrandin/pycryptodome/commit/d1739c62b9b845f8a5b342de08d6bf6e2722d24.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/Legrandin/pycryptodome/issues/198"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.6",
+                "check_command": "awk \"NR>=225 && NR<=225\" src/AESNI.c",
+                "run_kwargs": {},
+                "type": "Segmentation Fault"
+            }
+        ]
+    },
+    {
+        "library_name": "paramiko",
+        "version_number": "2.3.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/cyberx-labs/paramiko",
+        "security_issues": [
+            {
+                "public_id": "CVE-2018-7750",
+                "patch_commits": [
+                    {
+                        "commit_hash": "07dbaa585ab22c12658832f17529eef69223081",
+                        "commit_url": "https://github.com/paramiko/paramiko/commit/07dbaa585ab22c12658832f17529eef69223081.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://www.exploit-db.com/exploits/45712/"
+                    ],
+                    "available": false
+                },
+                "python_version": "3.6",
+                "check_command": "awk \"NR>=36 && NR<=36\" tests/test_transport.py",
+                "run_kwargs": {},
+                "type": "Authentication Bypass"
+            }
+        ]
+    },
+    {
+        "library_name": "owlmixin",
+        "version_number": "1.0.0b4",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/tadashi-aikawa/owlmixin",
+        "security_issues": [
+            {
+                "public_id": "CVE-2017-16618",
+                "patch_commits": [
+                    {
+                        "commit_hash": "5d0575303f6df869a515ced4285f24ba721e0d4",
+                        "commit_url": "https://github.com/tadashi-aikawa/owlmixin/commit/5d0575303f6df869a515ced4285f24ba721e0d4.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/tadashi-aikawa/owlmixin/issues/12",
+                        "https://joel-malwarebenchmark.github.io/blog/2017/11/08/cve-2017-16618-convert-through-owlmixin/"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.6",
+                "check_command": "awk \"NR>=95 && NR<=96\" owlmixin/util.py",
+                "run_kwargs": {},
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "mlalchemy",
+        "version_number": "0.2.1",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/thanethomson/MLAlchemy",
+        "security_issues": [
+            {
+                "public_id": "CVE-2017-16615",
+                "patch_commits": [
+                    {
+                        "commit_hash": "bc795757febdcce430d89f9d08f75c32d6989d3",
+                        "commit_url": "https://github.com/thanethomson/MLAlchemy/commit/bc795757febdcce430d89f9d08f75c32d6989d3.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://github.com/thanethomson/MLAlchemy/issues/1",
+                        "https://joel-malwarebenchmark.github.io/blog/2017/11/08/cve-2017-16615-critical-restful-web-applications-vulnerability/"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.6",
+                "check_command": "awk \"NR>=36 && NR<=36\" mlalchemy/parser.py",
+                "run_kwargs": {},
+                "type": "Command Injection"
+            }
+        ]
+    },
+    {
+        "library_name": "ansible-vault",
+        "version_number": "1.0.3",
+        "vendor": "",
+        "platform": "Pypi",
+        "repo_url": "https://github.com/tomoh1r/ansible-vault",
+        "security_issues": [
+            {
+                "public_id": "CVE-2017-2809",
+                "patch_commits": [
+                    {
+                        "commit_hash": "3f8f659ef443ab870bb19f95d43543470168ae0",
+                        "commit_url": "https://github.com/tomoh1r/ansible-vault/commit/3f8f659ef443ab870bb19f95d43543470168ae0.patch"
+                    }
+                ],
+                "poc": {
+                    "exists": true,
+                    "type": "executable",
+                    "url": [
+                        "https://www.talosintelligence.com/vulnerability_reports/TALOS-2017-0305"
+                    ],
+                    "available": true
+                },
+                "python_version": "3.6",
+                "check_command": "awk \"NR>=18 && NR<=18\" ansible_vault/api.py",
+                "run_kwargs": {},
+                "type": "Command Injection"
+            }
+        ]
+    }
+]

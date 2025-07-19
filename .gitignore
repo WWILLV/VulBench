@@ -1,6 +1,5 @@
 workspace/
 __pycache__/
-Data/
 .idea/
 .vscode/
 .git/
