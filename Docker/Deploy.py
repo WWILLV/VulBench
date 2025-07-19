@@ -262,10 +262,16 @@ class Deploy:
                     install_commands.append("hatch env create")
                     pkg_installed_info.append(
                         {"name": pkg_name, "path": file_full_path, "type": "hatch", "cmd": install_commands})
+                elif '[tool.towncrier]' in content:
+                    install_commands.append("pip install towncrier")
+                    install_commands.append("towncrier build")
+                    install_commands.append("pip install .")
+                    pkg_installed_info.append(
+                        {"name": pkg_name, "path": file_full_path, "type": "towncrier", "cmd": install_commands})
                 elif '[build-system]' in content and 'setuptools.build_meta' in content:
                     install_commands.append("pip install build")
                     install_commands.append("python -m build")
-                    install_commands.append("pip install -e .")
+                    install_commands.append("pip install .")
                     pkg_installed_info.append(
                         {"name": pkg_name, "path": file_full_path, "type": "build", "cmd": install_commands})
                 # elif '[tool.uv]' in content or 'uv.core.masonry.api' in content:
@@ -283,7 +289,7 @@ class Deploy:
                 break
             if file == 'setup.py':
                 install_commands.append("python setup.py install")
-                install_commands.append("pip install -e .")
+                install_commands.append("pip install .")
                 pkg_installed_info.append(
                     {"name": pkg_name, "path": file_full_path, "type": "setup", "cmd": install_commands})
                 break

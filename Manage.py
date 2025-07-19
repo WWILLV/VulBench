@@ -4,6 +4,8 @@ __author__ = 'WILL_V'
 import json
 import os
 import logging
+import base64
+import time
 import concurrent.futures
 from Docker.Deploy import Deploy
 from Docker.DockerHandle import DockerHandle
@@ -88,6 +90,55 @@ class Manage:
         output += "-" * 50 + "\n"
         return output
 
+    @staticmethod
+    def show_results(result_file: str, output: bool = True, result_type: str = '') -> dict:
+        """
+        Show the results of the benchmark.
+        :param result_file: The path to the result file.
+        :param output: Whether to print the results to the console.
+        :param result_type: The type of the result, can be any string to indicate the type of result.
+        :return: Object containing the decoded results.
+        """
+        result = {
+            "poc": "",
+            "input": "",
+            "output": "",
+            "error": "",
+            "running_time": 0
+        }
+        if not os.path.exists(result_file):
+            logging.error(f"Result file {result_file} does not exist.")
+            return result
+        with open(result_file, 'r') as f:
+            data = json.load(f)
+        result["poc"] = data.get("poc", "")
+        result["input"] = data.get("input", "")
+        result["output"] = base64.b64decode(data.get("output", "")).decode('utf-8') if data.get("output") else ""
+        result["error"] = base64.b64decode(data.get("error", "")).decode('utf-8') if data.get("error") else ""
+        result["running_time"] = data.get("running_time", 0)
+        if output:
+            print()
+            embed = '-' * 50
+            if result_type != '':
+                embed = '-' * 20 + f" {result_type.upper()} RESULT " + '-' * 20
+            print(embed)
+            if result['input'].strip() == '':
+                print(f"[VulBench] POC {result['poc']} running with no input.")
+            else:
+                print(f"[VulBench] POC {result['poc']} running with input: {result['input']}")
+            if result['output'].strip() != '':
+                print(f"\n[VulBench] Output: \n{result['output']}")
+            else:
+                print(f"\n[VulBench] POC {result['poc']} running with no output.")
+            if result['error'].strip() != '':
+                print(f"\n[VulBench] Error: \n{result['error']}")
+            else:
+                print(f"\n[VulBench] POC {result['poc']} running with no error.")
+            print(f"\n[VulBench] Running time: {result['running_time']} seconds")
+            print(embed)
+            print()
+        return result
+
     def run_bench(self, git_repo: str, commit: str, py_version: str, name: str, check_command: str, patch: str = "",
                   lazy_deploy: bool = True, deploy_command: list = None, run_kwargs: dict = None):
         """
@@ -148,16 +199,23 @@ class Manage:
                                               src_path=patch_path,
                                               dest_path=f"/vulbench/{repo_name}.patch")
 
-        # check_command = check_command
-        output = deployer.docker_handle.container_exec(container_id=container_ori.id, command=check_command)
-        logging.info(f"Output before patching: \n{output}")
+        if check_command is not None and check_command.strip():
+            # check_command = check_command
+            output = deployer.docker_handle.container_exec(container_id=container_ori.id, command=check_command)
+            logging.info(f"Output before patching: \n{output}")
 
-        # patch the container and run the POC in the patched container
-        deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                              command=f"git apply /vulbench/{repo_name}.patch")
+            # patch the container and run the POC in the patched container
+            result = deployer.docker_handle.container_exec(container_id=container_patched.id,
+                                                           command=f"git apply /vulbench/{repo_name}.patch")
+            if "error: patch failed:" in result:
+                logging.error(f"\n{result}")
+                logging.error(f"Patch {patch_path} does not apply to the container, try `patch` command")
+                result = deployer.docker_handle.container_exec(container_id=container_patched.id,
+                                                               command=f"sh -c 'patch -p1 < /vulbench/{repo_name}.patch'")
+                logging.warning(f"\n{result}")
 
-        output = deployer.docker_handle.container_exec(container_id=container_patched.id, command=check_command)
-        logging.info(f"Output after patching: \n{output}")
+            output = deployer.docker_handle.container_exec(container_id=container_patched.id, command=check_command)
+            logging.info(f"Output after patching: \n{output}")
 
         # run the lazy deploy script
         if lazy_deploy:
@@ -187,6 +245,8 @@ class Manage:
                                                        command=f"python /vulbench/poc/{name}/run.py")
         logging.info(f"Output of POC execution after patching: \n{output}")
 
+        print(f"POC {name} executed successfully in both containers.")
+
         # Get vb_poc_result.json from the both container
         result_dir = os.path.join(deployer.space_path, f"result")
         result_ori = deployer.docker_handle.get_files_from_container(container_id=container_ori.id,
@@ -197,6 +257,7 @@ class Manage:
             ori_to = os.path.join(result_dir, f"{repo_name}_{current_commit}ori.json")
             deployer.move_file(result_ori, ori_to)
             logging.info(f"Original result saved to {ori_to}")
+            self.show_results(ori_to, result_type="original")
 
         result_patched = deployer.docker_handle.get_files_from_container(container_id=container_patched.id,
                                                                          src_path="/vulbench/vb_poc_result.json",
@@ -206,9 +267,9 @@ class Manage:
             patched_to = os.path.join(result_dir, f"{repo_name}_{current_commit}_patched.json")
             deployer.move_file(result_patched, patched_to)
             logging.info(f"Patched result saved to {patched_to}")
+            self.show_results(patched_to, result_type="patched")
 
-
-    def run_bench_by_name(self, name: str, patch: str):
+    def run_bench_by_name(self, name: str, patch: str = ''):
         """
         Run the benchmark for a specific POC by its name.
         :param name: The name of the POC.
@@ -219,19 +280,76 @@ class Manage:
         if not necessary:
             logging.error(f"Can not find POC {name} in the info file.")
             return
+        if patch != '' and not os.path.exists(patch):
+            logging.error(f"Patch file {patch} does not exist.")
+            return
         print(f"Selected POC: {name}")
         print(self.format_info(info))
         logging.info(f"Running benchmark for POC: {name}")
         try:
             print("Please wait, this may take a while...")
+            start_time = time.time()
             self.run_bench(git_repo=necessary["git_repo"],
                            commit=necessary["commit"],
                            py_version=necessary["py_version"],
                            name=name,
                            check_command=necessary["check_command"],
                            deploy_command=necessary["deploy_command"],
-                           run_kwargs=necessary["run_kwargs"], )
-            print("All done! You can check the results in the logs.")
+                           run_kwargs=necessary["run_kwargs"],
+                           patch=patch if patch is not None else "")
+            end_time = time.time()
+            duration = end_time - start_time
+            print(f"\n[VulBench] All test for {name} done! You can check the results in the logs.")
+            logging.info(f"Benchmark for {name} completed in {duration:.2f} seconds.")
+            print(f"[VulBench] Completed benchmark for {name} in {duration:.2f} seconds.\n")
         except Exception as e:
             logging.error(f"Error running benchmark for {name}: {e}")
             return
+
+    def run_all_bench(self, patch_dir: str = None, poc_list: list = None):
+        """
+        Run the benchmark for all POCs.
+        :param patch_dir: The directory containing patch files, if any.
+        :param poc_list: A list of POC names to run, if None, will run all available POCs.
+        :return:
+        """
+        info_file = os.path.join(self.local_poc_path, "info.json")
+        if not os.path.exists(info_file):
+            logging.error("Info file does not exist.")
+            return
+
+        if patch_dir != '' and not os.path.exists(patch_dir):
+            logging.error(f"Patch directory {patch_dir} does not exist.")
+            return
+
+        with open(info_file, 'r') as f:
+            info = json.load(f)
+
+        if poc_list is None:
+            available_id = [issue.get("public_id", "") for item in info for issue in item.get("security_issues", [])
+                            if issue.get("poc", {}).get("available", False)]
+        else:
+            available_id = [name for name in poc_list if name.strip()]
+        available_id = sorted(list(set(available_id)))[::-1]
+        logging.info(f"Running benchmarks for {len(available_id)} available POCs.")
+        logging.info(f"Available POCs: {', '.join(ai for ai in available_id)}")
+        print(
+            f"[VulBench] Running benchmarks for {len(available_id)} available POCs: {', '.join(ai for ai in available_id)}")
+        index = 1
+        total = len(available_id)
+        for name in available_id:
+            try:
+                patch = ''
+                if patch_dir != '':
+                    patch_path = os.path.join(patch_dir, f"{name}.patch")
+                    if os.path.exists(patch_path):
+                        patch = patch_path
+                print(f"[{index}/{total}] Running benchmark for POC: {name}")
+                self.run_bench_by_name(name, patch=patch)
+                index += 1
+            except KeyboardInterrupt:
+                logging.info("Benchmarking interrupted by user.")
+                break
+            except Exception as e:
+                logging.error(f"Error running benchmark for {name}: {e}")
+                continue

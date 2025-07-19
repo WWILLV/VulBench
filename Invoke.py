@@ -51,6 +51,12 @@ class Invoke:
             if start_arg == '':
                 logging.error("Must provide a name for the poc to start.")
                 return None
+            if ',' in start_arg:
+                start_arg = start_arg.split(',')
+                start_arg = [arg.strip() for arg in start_arg if arg.strip() != '']
+                if not start_arg:
+                    logging.error("Must provide at least one valid poc name to start.")
+                    return None
             patch_path = ''
             if self.args.patch is not None:
                 patch_path = self.args.patch.strip()
@@ -58,7 +64,7 @@ class Invoke:
                     logging.error("Must provide a path for the patch to apply.")
                     return None
                 if not os.path.exists(patch_path):
-                    logging.error(f"Patch file does not exist: {patch_path}")
+                    logging.error(f"Patch file/directory does not exist: {patch_path}")
                     return None
             fun_args.append({"function": "start", "args": start_arg, "patch": patch_path})
 
@@ -262,7 +268,11 @@ class Invoke:
                 break
             if fun_arg['function'] == 'start':
                 manage = Manage()
-                manage.run_bench_by_name(fun_arg['args'], fun_arg['patch'])
+                if type(fun_arg['args']) is str:
+                    if fun_arg['args'].strip().lower() == 'all':
+                        manage.run_all_bench(poc_list=None, patch_dir=fun_arg['patch'])
+                    else:
+                        manage.run_bench_by_name(fun_arg['args'], fun_arg['patch'])
+                elif type(fun_arg['args']) is list:
+                    manage.run_all_bench(poc_list=fun_arg['args'], patch_dir=fun_arg['patch'])
                 break
-
-        pass

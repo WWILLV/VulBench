@@ -32,7 +32,7 @@ parser.add_argument(
     "--patch",
     type=str,
     metavar="path_to_patch",
-    help="Apply a patch to target application. Provide the path to the patch file."
+    help="Apply a patch to target application. Provide the path to the patch file or directory."
 )
 
 if not any(vars(parser.parse_args()).values()):
