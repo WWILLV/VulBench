@@ -22,10 +22,10 @@ parser.add_argument(
 )
 parser.add_argument(
     "-s",
-    "--start",
+    "--run",
     type=str,
     metavar="poc_name",
-    help="Start a POC test. Specify the poc name to start it."
+    help="Run a POC test. Specify the poc name to run it."
 )
 parser.add_argument(
     "-p",

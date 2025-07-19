@@ -13,10 +13,10 @@ class InOut:
 
     def __init__(self, poc_file=None, poc_input=None, poc_dependencies=None, output_dependencies=True):
         """
-        Input and Output class for handling POC (Proof of Concept) files.
+        Input and Output class for handling PoC (Proof of Concept) files.
         :param poc_file: Path to the POC file.
-        :param poc_input: Input data for the POC.
-        :param poc_dependencies: List of dependencies required for the POC.
+        :param poc_input: Input data for the PoC.
+        :param poc_dependencies: List of dependencies required for the PoC.
         Will be installed via pip one by one; otherwise, it will be executed as a command if it starts with @.
         :param output_dependencies: If True, output the dependencies installed.
         """

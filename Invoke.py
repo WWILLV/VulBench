@@ -46,15 +46,15 @@ class Invoke:
                 logging.error("Must provide a name for the new poc.")
                 return None
             fun_args.append({"function": "new", "args": new_arg})
-        elif self.args.start is not None:
-            start_arg = self.args.start.strip()
-            if start_arg == '':
+        elif self.args.run is not None:
+            run_arg = self.args.run.strip()
+            if run_arg == '':
                 logging.error("Must provide a name for the poc to start.")
                 return None
-            if ',' in start_arg:
-                start_arg = start_arg.split(',')
-                start_arg = [arg.strip() for arg in start_arg if arg.strip() != '']
-                if not start_arg:
+            if ',' in run_arg:
+                run_arg = run_arg.split(',')
+                run_arg = [arg.strip() for arg in run_arg if arg.strip() != '']
+                if not run_arg:
                     logging.error("Must provide at least one valid poc name to start.")
                     return None
             patch_path = ''
@@ -66,7 +66,7 @@ class Invoke:
                 if not os.path.exists(patch_path):
                     logging.error(f"Patch file/directory does not exist: {patch_path}")
                     return None
-            fun_args.append({"function": "start", "args": start_arg, "patch": patch_path})
+            fun_args.append({"function": "run", "args": run_arg, "patch": patch_path})
 
         return fun_args
 
@@ -266,7 +266,7 @@ class Invoke:
             if fun_arg['function'] == 'new':  # Creating a new benchmark
                 self.new_poc(fun_arg['args'])
                 break
-            if fun_arg['function'] == 'start':
+            if fun_arg['function'] == 'run':
                 manage = Manage()
                 if type(fun_arg['args']) is str:
                     if fun_arg['args'].strip().lower() == 'all':
