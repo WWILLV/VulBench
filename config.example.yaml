@@ -9,8 +9,12 @@ LLM:
   model: "" # Model name
   api_key: "" # Your LLM API key
   stream: false # Set to true if you want to stream the response
-  temperature: 0.7 # Temperature for response generation
-  max_tokens: 1024 # Maximum number of tokens in the response
+  temperature: 0.6 # Temperature for response generation
+  top_p: 0.95 # Top-p for response generation
+  max_tokens: 8192 # Maximum number of tokens in the response
+  timeout:  # Timeout for API requests in seconds, and empty value means no timeout. Strongly recommended to set a higher value if using a thinking model without streaming response.
+  thinking: true # Set to true if you want the model to think before responding
+  thinking_budget: 4096 # Maximum number of tokens for thinking
 
 Browser: # Only for PoC checking
   use_proxy: false # Set to true if you want to use a proxy

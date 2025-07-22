@@ -20,10 +20,14 @@ class ChatGPT:
         self.api_key = config.get("LLM").get("api_key", "")
         self.base_url = config.get("LLM").get("base_url", "https://api.openai.com/v1")
         self.model = config.get("LLM").get("model", "gpt-3.5-turbo")
-        self.system_prompt = system_prompt if system_prompt else "You are a helpful assistant named VRBench, a tool for vulnerability repair benchmark."
+        self.system_prompt = system_prompt if system_prompt else "You are a helpful assistant named VulBench, a tool for vulnerability repair benchmark."
         self.stream = config.get("LLM").get("stream", False)
-        self.temperature = config.get("LLM").get("temperature", 0.7)
-        self.max_tokens = config.get("LLM").get("max_tokens", 1024)
+        self.temperature = config.get("LLM").get("temperature", 0.6)
+        self.top_p = config.get("LLM").get("top_p", 0.95)
+        self.max_tokens = config.get("LLM").get("max_tokens", 8192)
+        self.timeout = config.get("LLM").get("timeout", None)
+        self.thinking = config.get("LLM").get("thinking", False)
+        self.thinking_budget = config.get("LLM").get("thinking_budget", 4096)
         self.openai = OpenAI(api_key=self.api_key, base_url=self.base_url)
         logging.info(f"OpenAI API initialized. Model: {self.model}, base_url: {self.base_url}")
 
@@ -34,13 +38,19 @@ class ChatGPT:
         :return: The response from the OpenAI API.
         """
         try:
+            args = {}
+            if self.thinking:
+                logging.info(f"Using thinking mode with budget: {self.thinking_budget}")
+                args = {"extra_body": {"thinking_budget": self.thinking_budget}}
             response = self.openai.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 stream=self.stream,
                 temperature=self.temperature,
+                top_p=self.top_p,
                 max_tokens=self.max_tokens,
-                timeout=10
+                timeout=self.timeout,
+                **args if self.thinking else {}
             )
             return response
 
