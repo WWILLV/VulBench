@@ -42,6 +42,7 @@ class ChatGPT:
             if self.thinking:
                 logging.info(f"Using thinking mode with budget: {self.thinking_budget}")
                 args = {"extra_body": {"thinking_budget": self.thinking_budget}}
+                logging.info("Thinking and reasoning. Please wait...")
             response = self.openai.chat.completions.create(
                 model=self.model,
                 messages=messages,
@@ -99,6 +100,18 @@ class ChatGPT:
             return full_text if not self.stream else None
 
         try:
+            if self.thinking:
+                reasoning_content = ""
+                if self.stream:
+                    pass
+                    # for chunk in response:
+                    #     if chunk.choices and len(chunk.choices) > 0:
+                    #         if chunk.choices[0].delta.reasoning_content is not None:
+                    #             content = chunk.choices[0].delta.reasoning_content
+                    #             reasoning_content += content
+                else:
+                    reasoning_content = response.choices[0].message.model_extra.get("reasoning_content", "")
+                    logging.debug(f"Reasoning content: {reasoning_content}")
             if not self.stream:
                 return response.choices[0].message.content
             else:
