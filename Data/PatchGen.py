@@ -83,7 +83,7 @@ class PatchGen:
         patch = self.get_patch(file_code=file_code)
         if patch.strip() == "":
             patch = "[VulBench No Patch]"
-        if patch.strip().lower() == "[vulBench no patch]":
+        if patch.strip().lower() == "[vulbench no patch]":
             return ""
 
         return patch.strip()

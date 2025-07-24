@@ -82,7 +82,12 @@ class ChatGPT:
         response = self.chat(messages)
         if response is None:
             logging.error("No response received from API")
-            return None
+            logging.info("Trying again in 5 seconds...")
+            time.sleep(5)
+            response = self.chat(messages)
+            if response is None:
+                logging.error("Failed to get a response after retrying.")
+                return None
 
         def stream_response(response):
             """
