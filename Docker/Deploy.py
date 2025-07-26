@@ -120,6 +120,9 @@ class Deploy:
         if not repo_url.startswith("http"):
             repo_url = "https://github.com/" + repo_url.lstrip('/')
         logging.info(f"Cloning repository {repo_url} to {path}")
+        if os.path.exists(path):
+            logging.warning(f"Path {path} already exists. Skipping clone.")
+            return path
         try:
             git.Repo.clone_from(repo_url, path)
         except Exception as e:

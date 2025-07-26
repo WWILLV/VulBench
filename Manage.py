@@ -112,9 +112,9 @@ class Manage:
         with open(result_file, 'r') as f:
             data = json.load(f)
         result["poc"] = data.get("poc", "")
-        result["input"] = data.get("input", "")
-        result["output"] = base64.b64decode(data.get("output", "")).decode('utf-8') if data.get("output") else ""
-        result["error"] = base64.b64decode(data.get("error", "")).decode('utf-8') if data.get("error") else ""
+        result["input"] = data.get("poc_input", "")
+        result["output"] = base64.b64decode(data.get("poc_output", "")).decode('utf-8') if data.get("poc_output") else ""
+        result["error"] = base64.b64decode(data.get("poc_error", "")).decode('utf-8') if data.get("poc_error") else ""
         result["running_time"] = data.get("running_time", 0)
         if output:
             print()
@@ -254,7 +254,7 @@ class Manage:
                                                                      dest_path=result_dir)
         if result_ori is not None:
             result_ori = os.path.join(result_dir, f"vb_poc_result.json")
-            ori_to = os.path.join(result_dir, f"{repo_name}_{current_commit}ori.json")
+            ori_to = os.path.join(result_dir, f"{name}_ori_{repo_name}_{current_commit}.json")
             deployer.move_file(result_ori, ori_to)
             logging.info(f"Original result saved to {ori_to}")
             self.show_results(ori_to, result_type="original")
@@ -264,7 +264,7 @@ class Manage:
                                                                          dest_path=result_dir)
         if result_patched is not None:
             result_patched = os.path.join(result_dir, f"vb_poc_result.json")
-            patched_to = os.path.join(result_dir, f"{repo_name}_{current_commit}_patched.json")
+            patched_to = os.path.join(result_dir, f"{name}_patched_{repo_name}_{current_commit}.json")
             deployer.move_file(result_patched, patched_to)
             logging.info(f"Patched result saved to {patched_to}")
             self.show_results(patched_to, result_type="patched")
@@ -344,8 +344,10 @@ class Manage:
                     patch_path = os.path.join(patch_dir, f"{name}.patch")
                     if os.path.exists(patch_path):
                         patch = patch_path
+                print('-' * 50)
                 print(f"[{index}/{total}] Running benchmark for POC: {name}")
                 self.run_bench_by_name(name, patch=patch)
+                print('-' * 50)
                 index += 1
             except KeyboardInterrupt:
                 logging.info("Benchmarking interrupted by user.")

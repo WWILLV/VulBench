@@ -44,6 +44,7 @@ try:
     vbench.start()
 except KeyboardInterrupt:
     print("[VulBench] Interrupted by user.")
-    print("Have a nice day!")
 except Exception as e:
-    print(f"Top-level exception occurred: {e}")
+    print(f"[Error] Top-level exception occurred: {e}")
+
+print("Have a nice day!")
