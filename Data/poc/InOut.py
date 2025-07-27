@@ -107,6 +107,7 @@ class InOut:
                 'output': False,
                 'error': False,
                 'ontime': False,
+                'is_dos': False,
             } if match_result is None else match_result,
         }
 
@@ -248,7 +249,8 @@ class InOut:
             'match_result': {
                 'output': match_out,
                 'error': match_error,
-                'ontime': ontime
+                'ontime': ontime,
+                'is_dos': is_dos
             }
         }
 
@@ -265,7 +267,8 @@ class InOut:
         result_data['match_result'] = {
             'output': match_out,
             'error': match_error,
-            'ontime': ontime
+            'ontime': ontime,
+            'is_dos': is_dos
         }
 
         self.save_result(expected_output=result_data['expected_output'],

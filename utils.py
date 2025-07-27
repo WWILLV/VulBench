@@ -60,6 +60,18 @@ def setup_logging():
     return logger
 
 
+def get_logfile():
+    """
+    Get the path of the current log file.
+    :return: Path to the current log file.
+    """
+    log_files = [f for f in os.listdir(log_dir) if f.startswith("vb_") and f.endswith(".log")]
+    if not log_files:
+        return None
+    latest_log_file = max(log_files, key=lambda x: os.path.getmtime(os.path.join(log_dir, x)))
+    return os.path.join(log_dir, latest_log_file)
+
+
 def clean_logs(delete_days=7, delete_all=False):
     """
     Clean up log files older than the specified number of days.

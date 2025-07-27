@@ -259,6 +259,7 @@ class Invoke:
         if fun_args is None:
             return
 
+        start_time = time.time()
         for fun_arg in fun_args:
             if fun_arg['function'] == 'clean':  # Cleaning up resources
                 self.clean(fun_arg['args'])
@@ -276,3 +277,7 @@ class Invoke:
                 elif type(fun_arg['args']) is list:
                     manage.run_all_bench(poc_list=fun_arg['args'], patch_dir=fun_arg['patch'])
                 break
+        end_time = time.time()
+        logging.info(f"VulBench finished in {time.strftime('%H h %M m %S s', time.gmtime(end_time - start_time))}.")
+        log_file = utils.get_logfile()
+        logging.info(f"Logs are saved to: {log_file}")

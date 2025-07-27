@@ -9,6 +9,8 @@ import time
 import concurrent.futures
 from Docker.Deploy import Deploy
 from Docker.DockerHandle import DockerHandle
+from Data.ResultAnalysis import BenchResult
+from utils import get_workspace
 
 
 class Manage:
@@ -113,7 +115,8 @@ class Manage:
             data = json.load(f)
         result["poc"] = data.get("poc", "")
         result["input"] = data.get("poc_input", "")
-        result["output"] = base64.b64decode(data.get("poc_output", "")).decode('utf-8') if data.get("poc_output") else ""
+        result["output"] = base64.b64decode(data.get("poc_output", "")).decode('utf-8') if data.get(
+            "poc_output") else ""
         result["error"] = base64.b64decode(data.get("poc_error", "")).decode('utf-8') if data.get("poc_error") else ""
         result["running_time"] = data.get("running_time", 0)
         if output:
@@ -140,7 +143,7 @@ class Manage:
         return result
 
     def run_bench(self, git_repo: str, commit: str, py_version: str, name: str, check_command: str, patch: str = "",
-                  lazy_deploy: bool = True, deploy_command: list = None, run_kwargs: dict = None):
+                  lazy_deploy: bool = True, deploy_command: list = None, run_kwargs: dict = None) -> dict:
         """
         Run the benchmark for a specific POC.
         :param git_repo: Git repository URL.
@@ -152,7 +155,7 @@ class Manage:
         :param lazy_deploy: Lazy deploy or not, default is True.
         :param deploy_command: Command to run for deployment, if empty, will deploy automatically.
         :param run_kwargs: Additional arguments for running the container.
-        :return:
+        :return: Results of the benchmark execution.
         """
         deployer = Deploy()
         if not git_repo.startswith("http"):
@@ -173,6 +176,18 @@ class Manage:
         else:
             patch_path = patch
         # deployer.copy_file(patch_path, os.path.join(path, f"{repo_name}.patch"))
+
+        bench_result = {
+            "name": name,
+            "patch_path": patch_path,
+            "repo_name": repo_name,
+            "repo_path": path,
+            "commit": current_commit,
+            "parent_commit": pc,
+            "patch_result": {"git_apply": None, "patch_p1": None},
+            "check_result": {"ori": None, "patched": None},
+            "result_path": {"ori": None, "patched": None},
+        }  # Initialize the benchmark result dictionary
 
         # build the docker image and run the container by dockerfile
         logging.info(f"Building Docker image for {repo_name} at commit {pc} with Python version {py_version}.")
@@ -199,23 +214,27 @@ class Manage:
                                               src_path=patch_path,
                                               dest_path=f"/vulbench/{repo_name}.patch")
 
+        # patch the container and run the POC in the patched container
+        patch_result = deployer.docker_handle.container_exec(container_id=container_patched.id,
+                                                             command=f"git apply /vulbench/{repo_name}.patch")
+        bench_result["patch_result"]["git_apply"] = patch_result
+        if "error: patch failed:" in patch_result or "error: corrupt patch at line" in patch_result or str(patch_result).strip().startswith("error:"):
+            logging.error(f"\n{patch_result}")
+            logging.error(f"Patch {patch_path} does not apply to the container, try `patch` command")
+            patch_result = deployer.docker_handle.container_exec(container_id=container_patched.id,
+                                                                 command=f"sh -c 'patch -p1 < /vulbench/{repo_name}.patch'")
+            logging.warning(f"\n{patch_result}")
+            bench_result["patch_result"]["patch_p1"] = patch_result
+
         if check_command is not None and check_command.strip():
             # check_command = check_command
             output = deployer.docker_handle.container_exec(container_id=container_ori.id, command=check_command)
             logging.info(f"Output before patching: \n{output}")
-
-            # patch the container and run the POC in the patched container
-            result = deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                                           command=f"git apply /vulbench/{repo_name}.patch")
-            if "error: patch failed:" in result:
-                logging.error(f"\n{result}")
-                logging.error(f"Patch {patch_path} does not apply to the container, try `patch` command")
-                result = deployer.docker_handle.container_exec(container_id=container_patched.id,
-                                                               command=f"sh -c 'patch -p1 < /vulbench/{repo_name}.patch'")
-                logging.warning(f"\n{result}")
+            bench_result["check_result"]["ori"] = output
 
             output = deployer.docker_handle.container_exec(container_id=container_patched.id, command=check_command)
             logging.info(f"Output after patching: \n{output}")
+            bench_result["check_result"]["patched"] = output
 
         # run the lazy deploy script
         if lazy_deploy:
@@ -257,6 +276,7 @@ class Manage:
             ori_to = os.path.join(result_dir, f"{name}_ori_{repo_name}_{current_commit}.json")
             deployer.move_file(result_ori, ori_to)
             logging.info(f"Original result saved to {ori_to}")
+            bench_result["result_path"]["ori"] = ori_to
             self.show_results(ori_to, result_type="original")
 
         result_patched = deployer.docker_handle.get_files_from_container(container_id=container_patched.id,
@@ -267,7 +287,10 @@ class Manage:
             patched_to = os.path.join(result_dir, f"{name}_patched_{repo_name}_{current_commit}.json")
             deployer.move_file(result_patched, patched_to)
             logging.info(f"Patched result saved to {patched_to}")
+            bench_result["result_path"]["patched"] = patched_to
             self.show_results(patched_to, result_type="patched")
+
+        return bench_result
 
     def run_bench_by_name(self, name: str, patch: str = ''):
         """
@@ -279,32 +302,34 @@ class Manage:
         info, necessary = self.get_info(name)
         if not necessary:
             logging.error(f"Can not find POC {name} in the info file.")
-            return
+            return None
         if patch != '' and not os.path.exists(patch):
             logging.error(f"Patch file {patch} does not exist.")
-            return
+            return None
         print(f"Selected POC: {name}")
         print(self.format_info(info))
         logging.info(f"Running benchmark for POC: {name}")
         try:
             print("Please wait, this may take a while...")
             start_time = time.time()
-            self.run_bench(git_repo=necessary["git_repo"],
-                           commit=necessary["commit"],
-                           py_version=necessary["py_version"],
-                           name=name,
-                           check_command=necessary["check_command"],
-                           deploy_command=necessary["deploy_command"],
-                           run_kwargs=necessary["run_kwargs"],
-                           patch=patch if patch is not None else "")
+
+            bench_result = self.run_bench(git_repo=necessary["git_repo"],
+                                          commit=necessary["commit"],
+                                          py_version=necessary["py_version"],
+                                          name=name,
+                                          check_command=necessary["check_command"],
+                                          deploy_command=necessary["deploy_command"],
+                                          run_kwargs=necessary["run_kwargs"],
+                                          patch=patch if patch is not None else "")
             end_time = time.time()
             duration = end_time - start_time
             print(f"\n[VulBench] All test for {name} done! You can check the results in the logs.")
             logging.info(f"Benchmark for {name} completed in {duration:.2f} seconds.")
             print(f"[VulBench] Completed benchmark for {name} in {duration:.2f} seconds.\n")
+            return bench_result
         except Exception as e:
             logging.error(f"Error running benchmark for {name}: {e}")
-            return
+            return None
 
     def run_all_bench(self, patch_dir: str = None, poc_list: list = None):
         """
@@ -337,6 +362,8 @@ class Manage:
             f"[VulBench] Running benchmarks for {len(available_id)} available POCs: {', '.join(ai for ai in available_id)}")
         index = 1
         total = len(available_id)
+        all_bench_result = []
+        start_time = time.time()
         for name in available_id:
             try:
                 patch = ''
@@ -346,7 +373,12 @@ class Manage:
                         patch = patch_path
                 print('-' * 50)
                 print(f"[{index}/{total}] Running benchmark for POC: {name}")
-                self.run_bench_by_name(name, patch=patch)
+                pass_time = time.time()-start_time
+                remaining_time = (total + 1 - index) * pass_time / index
+                print(f"[VulBench] Time passed: {pass_time:.2f} seconds, estimated remaining time: {remaining_time:.2f} seconds")
+                bench_result = self.run_bench_by_name(name, patch=patch)
+                if bench_result is not None:
+                    all_bench_result.append(bench_result)
                 print('-' * 50)
                 index += 1
             except KeyboardInterrupt:
@@ -355,3 +387,17 @@ class Manage:
             except Exception as e:
                 logging.error(f"Error running benchmark for {name}: {e}")
                 continue
+
+        # Save all benchmark results to a file
+        try:
+            result_save_path = os.path.join(get_workspace(), f"VulBench_results_{time.time()}.json")
+            with open(result_save_path, 'w') as f:
+                json.dump(all_bench_result, f, indent=4)
+            logging.info(f"All benchmark results saved to {result_save_path}")
+            logging.info("Starting result analysis...")
+            br = BenchResult(result_save_path)
+            br.analyze_result()
+        except Exception as e:
+            logging.error(f"Error saving all benchmark results: {e}")
+
+        return all_bench_result
