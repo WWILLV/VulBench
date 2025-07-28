@@ -4,17 +4,21 @@ Log:
   level: "info" # Log level (debug, info, warning, error, critical), default is ""
   format: "" # Log format, default is "%(asctime)s\t%(name)s\t%(levelname)s\t[%(filename)s:%(lineno)d]\t%(message)s"
 
+Patch:
+  allow_empty_patch: true # Allow empty patches or not. If set to false, the patch will be skipped if it is empty.
+  tolerant_valid_patch: true # Whether to consider patches that match tolerant fuzzy patch hunks as valid.
+
 LLM:
   base_url: "" # Base URL for LLM API
   model: "" # Model name
   api_key: "" # Your LLM API key
   stream: false # Set to true if you want to stream the response
   temperature: 0.6 # Temperature for response generation
-  top_p: 0.95 # Top-p for response generation
-  max_tokens: 8192 # Maximum number of tokens in the response
+  top_p: 0.9 # Top-p for response generation
+  max_tokens: # Maximum number of tokens in the response
   timeout:  # Timeout for API requests in seconds, and empty value means no timeout. Strongly recommended to set a higher value if using a thinking model without streaming response.
   thinking: false # Set to true if you want the model to think before responding
-  thinking_budget: 4096 # Maximum number of tokens for thinking
+  thinking_budget: 10240 # Maximum number of tokens for thinking
 
 Browser: # Only for PoC checking
   use_proxy: false # Set to true if you want to use a proxy

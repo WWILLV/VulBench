@@ -60,6 +60,22 @@ class Deploy:
             logging.error(f"Failed to move file from {src} to {dst}: {e}")
 
     @staticmethod
+    def move_dir(src: str, dst: str) -> None:
+        """
+        Moves a directory from the source path to the destination path.
+        :param src: The source directory path.
+        :param dst: The destination directory path.
+        """
+        if not os.path.exists(src):
+            logging.error(f"Source directory {src} does not exist.")
+            return
+        try:
+            shutil.move(src, dst)
+            logging.info(f"Moved directory from {src} to {dst}")
+        except Exception as e:
+            logging.error(f"Failed to move directory from {src} to {dst}: {e}")
+
+    @staticmethod
     def copy_file(src: str, dst: str) -> None:
         """
         Copies a file from the source path to the destination path.

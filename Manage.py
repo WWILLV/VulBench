@@ -10,7 +10,7 @@ import concurrent.futures
 from Docker.Deploy import Deploy
 from Docker.DockerHandle import DockerHandle
 from Data.ResultAnalysis import BenchResult
-from utils import get_workspace
+from utils import get_workspace, load_config
 
 
 class Manage:
@@ -218,7 +218,8 @@ class Manage:
         patch_result = deployer.docker_handle.container_exec(container_id=container_patched.id,
                                                              command=f"git apply /vulbench/{repo_name}.patch")
         bench_result["patch_result"]["git_apply"] = patch_result
-        if "error: patch failed:" in patch_result or "error: corrupt patch at line" in patch_result or str(patch_result).strip().startswith("error:"):
+        if "error: patch failed:" in patch_result or "error: corrupt patch at line" in patch_result or str(
+                patch_result).strip().startswith("error:"):
             logging.error(f"\n{patch_result}")
             logging.error(f"Patch {patch_path} does not apply to the container, try `patch` command")
             patch_result = deployer.docker_handle.container_exec(container_id=container_patched.id,
@@ -371,11 +372,22 @@ class Manage:
                     patch_path = os.path.join(patch_dir, f"{name}.patch")
                     if os.path.exists(patch_path):
                         patch = patch_path
+
+                # If not allow empty patch, continue to next POC
+                allow_empty_patch = load_config().get("Patch", {}).get("allow_empty_patch", True)
+                if not allow_empty_patch:
+                    with open(patch, 'r') as f:
+                        content = f.read().strip()
+                    if content == '':
+                        logging.warning("Do not allow empty patch, skipping this POC.")
+                        continue
+
                 print('-' * 50)
                 print(f"[{index}/{total}] Running benchmark for POC: {name}")
-                pass_time = time.time()-start_time
+                pass_time = time.time() - start_time
                 remaining_time = (total + 1 - index) * pass_time / index
-                print(f"[VulBench] Time passed: {pass_time:.2f} seconds, estimated remaining time: {remaining_time:.2f} seconds")
+                print(
+                    f"[VulBench] Time passed: {pass_time:.2f} seconds, estimated remaining time: {remaining_time:.2f} seconds")
                 bench_result = self.run_bench_by_name(name, patch=patch)
                 if bench_result is not None:
                     all_bench_result.append(bench_result)
@@ -396,8 +408,25 @@ class Manage:
             logging.info(f"All benchmark results saved to {result_save_path}")
             logging.info("Starting result analysis...")
             br = BenchResult(result_save_path)
-            br.analyze_result()
+            valid_patches, working_patches = br.analyze_result()
+            print('-'*20+"VulBench"+'-'*20)
+            print(f"Valid Patches [{len(valid_patches)}]:")
+            for vp in valid_patches:
+                print(f"{vp.get('name','')}\t{vp.get('patch_path','')}")
+            print(f"Working Patches [{len(working_patches)}]:")
+            for wp in working_patches:
+                print(f"{wp.get('name','')}\t{wp.get('patch_path','')}")
+            print('-'*20+f"Result: {os.path.basename(result_save_path)}"+'-'*20)
         except Exception as e:
             logging.error(f"Error saving all benchmark results: {e}")
+
+        dh = DockerHandle()
+        images = dh.get_image_vulbench()
+        containers = dh.get_container_vulbench()
+        if len(containers) >= 3 * len(images):
+            msg = (f"{len(images)} VulBench images and {len(containers)} containers found, " +
+                   "please clean up the unused containers and images with `-c docker`.")
+            logging.warning(msg)
+            print(msg)
 
         return all_bench_result

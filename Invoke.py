@@ -258,6 +258,7 @@ class Invoke:
         fun_args = self.parse_args()
         if fun_args is None:
             return
+        logging.info(f"VulBench run with arguments: {fun_args}")
 
         start_time = time.time()
         for fun_arg in fun_args:

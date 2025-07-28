@@ -3,8 +3,10 @@ __author__ = 'WILL_V'
 
 import os
 import json
+import re
 import base64
 import logging
+from utils import load_config
 
 
 class PatchResult:
@@ -154,13 +156,23 @@ class BenchResult:
         patched_check = patch_error['check']['patched']
 
         patch_valid = False
+        p1_regex = (r'Hunk\s+#\d+\s+FAILED|'
+                    r'Reversed patch detected|'
+                    r'malformed patch|'
+                    r'Only garbage was found|'
+                    r'can\'t find file|'
+                    r'No such file|'
+                    r'unexpected end of file in patch')
+        tolerant_valid_patch = load_config().get("Patch", {}).get("tolerant_valid_patch", True)
+        p1_regex += r'|Hunk\s+#\d+\s+succeeded' if not tolerant_valid_patch else ''
 
         if 'error:' not in git_apply_msg and patch_p1_msg == '':
             logging.info("Patch applied successfully, no errors found.")
             patch_valid = True
-        elif ('Hunk' not in patch_p1_msg and
-              'Reversed patch detected' not in patch_p1_msg and
-              'malformed patch' not in patch_p1_msg):
+        elif tolerant_valid_patch and patch_p1_msg != '' and re.search(r'Hunk\s+#\d+\s+succeeded', patch_p1_msg):
+            logging.info("Patch fuzz apply succeeded, but with some hunks modified.")
+            patch_valid = True
+        elif patch_p1_msg != '' and not re.search(p1_regex, patch_p1_msg, re.RegexFlag.IGNORECASE):
             logging.info("Patch applied successfully with patch_p1.")
             patch_valid = True
         elif ori_check != patched_check:
@@ -243,6 +255,11 @@ class BenchResult:
 
         for i, vp in enumerate(valid_patches):
             logging.info("-" * 20 + f" VALID PATCHES [{i + 1}] " + "-" * 20)
+            git_apply_msg = vp.get('patch_result', {}).get('git_apply', '')
+            patch_p1_msg = vp.get('patch_result', {}).get('patch_p1', '')
+            if 'error:' not in git_apply_msg and patch_p1_msg == '':
+                logging.info("** THIS PATCH VALID WITHOUT ERROR **")
+                logging.info(f"git apply: {git_apply_msg}\npatch p1: {patch_p1_msg}")
             logging.info(f"Patch valid: {vp['name']}")
             logging.info(json.dumps(vp, indent=4))
         for i, wp in enumerate(working_patches):
@@ -253,3 +270,5 @@ class BenchResult:
             pr = PatchResult(wp['result_path']['ori'])
             logging.info("-" * 20 + " PATCH RESULT " + "-" * 20)
             logging.info(json.dumps(pr.analyze_result(), indent=4))
+
+        return valid_patches, working_patches
