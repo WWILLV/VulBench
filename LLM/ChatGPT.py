@@ -116,7 +116,7 @@ class ChatGPT:
                     #             reasoning_content += content
                 else:
                     reasoning_content = response.choices[0].message.model_extra.get("reasoning_content", "")
-                    logging.debug(f"Reasoning content: {reasoning_content}")
+                    logging.info(f"Reasoning content: {reasoning_content}")
             if not self.stream:
                 return response.choices[0].message.content
             else:

@@ -157,7 +157,7 @@ class BenchResult:
 
         patch_valid = False
         p1_regex = (r'Hunk\s+#\d+\s+FAILED|'
-                    r'Reversed patch detected|'
+                    r'Reversed \(or previously applied\) patch detected|'
                     r'malformed patch|'
                     r'Only garbage was found|'
                     r'can\'t find file|'

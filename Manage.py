@@ -400,6 +400,8 @@ class Manage:
                 logging.error(f"Error running benchmark for {name}: {e}")
                 continue
 
+        print('[VulBench] All benchmarks have been completed, and the results are being analyzed.')
+
         # Save all benchmark results to a file
         try:
             result_save_path = os.path.join(get_workspace(), f"VulBench_results_{time.time()}.json")
@@ -417,6 +419,7 @@ class Manage:
             for wp in working_patches:
                 print(f"{wp.get('name','')}\t{wp.get('patch_path','')}")
             print('-'*20+f"Result: {os.path.basename(result_save_path)}"+'-'*20)
+            print('[VulBench] Result analysis completed. The results may not be accurate. Please check the logs for details.')
         except Exception as e:
             logging.error(f"Error saving all benchmark results: {e}")
 
@@ -424,7 +427,7 @@ class Manage:
         images = dh.get_image_vulbench()
         containers = dh.get_container_vulbench()
         if len(containers) >= 3 * len(images):
-            msg = (f"{len(images)} VulBench images and {len(containers)} containers found, " +
+            msg = (f"[VulBench] {len(images)} VulBench images and {len(containers)} containers found, " +
                    "please clean up the unused containers and images with `-c docker`.")
             logging.warning(msg)
             print(msg)

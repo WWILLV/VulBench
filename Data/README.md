@@ -71,7 +71,7 @@ if __name__ == "__main__":
    - `is_dos`: If True, indicates that the PoC is a DoS (Denial of Service) test.
    - `allow_empty_output`: If True, allows empty output to be considered a match.
    
-   `check_output()` returns a tuple of three boolean values: match_out, match_error, overtime
+   `check_output()` returns a tuple of three boolean values: match_out, match_error, (is_dos and ontime)
 5. In the sample code, we raise an exception if the PoC cannot be verified. 
    You should modify this part according to your needs.
 6. The poc code should be placed in the `Data/poc/<name>/code/` directory.

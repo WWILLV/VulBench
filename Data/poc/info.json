@@ -375,7 +375,7 @@
                 "deploy_command": [
                     "pip install -e ."
                 ],
-                "type": "Local File Inclusion"
+                "type": "Arbitrary File Read"
             },
             {
                 "public_id": "CVE-2023-3765",
