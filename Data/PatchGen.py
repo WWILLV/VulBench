@@ -3,6 +3,7 @@ __author__ = 'WILL_V'
 
 import logging
 import os
+import json
 from LLM.ChatGPT import ChatGPT
 from LLM.Prompt import Prompt
 
@@ -12,17 +13,22 @@ class PatchGen:
         self.prompt = Prompt()
         self.llm = ChatGPT(system_prompt=self.prompt.get_prompt(prompt_type='system', prompt_name='patch_generation'))
 
-    def get_patch(self, file_code: list = None) -> str:
+    def get_patch(self, file_code: list = None, given_prompt: str = None) -> str:
         """
         Get patch from LLM based on the provided filename and code.
         :param file_code: Filename and code to be used for patch generation.
+        :param given_prompt: Custom prompt to be used instead of the default.
         :return: Patch as a string.
         """
 
         if file_code is None:
             return ""
 
-        prompt = self.prompt.get_prompt(prompt_type='user', prompt_name='ask_directly', params=file_code)
+        if given_prompt is not None and given_prompt.strip() != "":
+            prompt = given_prompt
+            logging.info("Using given prompt for patch generation.")
+        else:
+            prompt = self.prompt.get_prompt(prompt_type='user', prompt_name='ask_directly', params=file_code)
         result = ""
 
         if self.llm.stream:
@@ -41,7 +47,14 @@ class PatchGen:
         logging.info(f"Response from LLM: {result}")
         return result
 
-    def generate_patch(self, data_path: str = '') -> str:
+    def generate_patch(self, data_path: str = '', prompt_path: str = '', add_vuln: bool = False) -> str:
+        """
+        Generate a patch based on the provided data path and optional prompt path.
+        :param data_path: Directory containing the data files (e.g., path.txt and code files).
+        :param prompt_path: If provided, use this prompt instead of the default one.
+        :param add_vuln: Add vulnerability type to the patch if available.
+        :return: The generated patch as a string.
+        """
 
         if not os.path.exists(data_path) or not os.path.isdir(data_path):
             logging.error(f"Invalid data path: {data_path}")
@@ -79,8 +92,22 @@ class PatchGen:
         for file in file_content:
             file_code.append({"FILENAME": file['filename'], "CODE": file['code']})
         file_code = [file_code]
+        if add_vuln:
+            if os.path.exists(os.path.join(os.path.dirname(data_path), 'info.json')):
+                info_data = json.load(open(os.path.join(os.path.dirname(data_path), 'info.json'), 'r', encoding='utf-8'))
+                dirname = os.path.basename(data_path)
+                for library in info_data:
+                    for issue in library.get('security_issues', []):
+                        if issue.get('public_id', '').lower() == dirname.lower():
+                            vuln_type = issue.get('type', '')
+                            if vuln_type:
+                                file_code[0].insert(0, {"VULNERABILITY_TYPE": vuln_type})
 
-        patch = self.get_patch(file_code=file_code)
+        given_prompt = None
+        if prompt_path and os.path.exists(prompt_path):
+            with open(prompt_path, 'r', encoding='utf-8') as f:
+                given_prompt = f.read()
+        patch = self.get_patch(file_code=file_code, given_prompt=given_prompt)
         if patch.strip() == "":
             patch = "[VulBench No Patch]"
         if patch.strip().lower() == "[vulbench no patch]":
@@ -88,12 +115,14 @@ class PatchGen:
 
         return patch.strip()
 
-    def save_patch(self, data_dir: str, result_dir: str):
+    def save_patch(self, data_dir: str, result_dir: str, prompt_dir: str = '', add_vuln: bool = False) -> bool:
         """
         Generate and save patches for all cases in the specified data directory.
         :param data_dir: Directory containing the data for which patches need to be generated.
         :param result_dir: Directory where the generated patches will be saved.
-        :return:
+        :param prompt_dir: Optional directory containing custom prompts.
+        :param add_vuln: Whether to add vulnerability type to the patch if available.
+        :return: True if patches were successfully generated and saved, False otherwise.
         """
 
         if not os.path.exists(data_dir):
@@ -107,7 +136,8 @@ class PatchGen:
             model = os.path.basename(self.llm.model)
             if model.strip() == "":
                 exit()
-            final_result_dir = os.path.join(result_dir, "result", model)
+            final_result_dir = os.path.join(result_dir, "patches", model)
+            all_dir = list(sorted(all_dir))[::-1]
             for case in all_dir:
                 if not os.path.exists(final_result_dir):
                     os.makedirs(final_result_dir)
@@ -116,7 +146,12 @@ class PatchGen:
                 if os.path.exists(case_file):
                     logging.warning(f"{case_file} already exists, skipping.")
                     continue
-                patch = self.generate_patch(os.path.join(data_dir, case))
+                prompt_path = ''
+                if prompt_dir and os.path.exists(prompt_dir):
+                    prompt_path = os.path.join(prompt_dir, f"{case}.txt")
+                patch = self.generate_patch(data_path=os.path.join(data_dir, case),
+                                            prompt_path=prompt_path,
+                                            add_vuln=add_vuln)
                 with open(case_file, 'w', encoding='utf-8') as f:
                     f.write(patch)
                 logging.info(f"Successfully saved patch for case {case} to {case_file}")

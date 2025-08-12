@@ -379,7 +379,9 @@ class Manage:
                     with open(patch, 'r') as f:
                         content = f.read().strip()
                     if content == '':
-                        logging.warning("Do not allow empty patch, skipping this POC.")
+                        total -= 1
+                        logging.warning(f"Do not allow empty patch, skipping this patch: {patch}")
+                        print(f"[VulBench] Do not allow empty patch, skipping this patch: {patch}")
                         continue
 
                 print('-' * 50)

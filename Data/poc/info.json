@@ -10,7 +10,7 @@
                 "public_id": "CVE-2024-28102",
                 "type": "DoS",
                 "python_version": "3.9",
-                "check_command": "awk \"NR>=12 && NR<=18\" jwcrypto/jwe.py",
+                "check_command": "awk \"NR>=424 && NR<=429\" jwcrypto/jwe.py",
                 "patch_commits": [
                     {
                         "commit_hash": "90477a3b6e73da69740e00b8161f53fea19b83",
