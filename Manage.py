@@ -309,6 +309,7 @@ class Manage:
             return None
         print(f"Selected POC: {name}")
         print(self.format_info(info))
+        print(f"Using patch: {patch if patch else 'No patch provided'}")
         logging.info(f"Running benchmark for POC: {name}")
         try:
             print("Please wait, this may take a while...")

@@ -29,13 +29,14 @@ class ChatGPT:
         self.thinking = config.get("LLM").get("thinking", False)
         self.thinking_budget = config.get("LLM").get("thinking_budget", 4096)
         self.openai = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self.error_retry = config.get("LLM").get("error_retry", 0)
         logging.info(f"OpenAI API initialized. Model: {self.model}, base_url: {self.base_url}")
 
     def chat(self, messages):
         """
         Send a chat message to the OpenAI API and return the response.
         :param messages: A list of messages to be sent to the OpenAI API.
-        :return: The response from the OpenAI API.
+        :return: The response from the OpenAI API, and an error message if any.
         """
         try:
             args = {}
@@ -53,16 +54,20 @@ class ChatGPT:
                 timeout=self.timeout,
                 **args if self.thinking else {}
             )
-            return response
+            return response, None
 
         except Exception as e:
             if "rate limiting" in str(e).lower():
                 logging.error(f"TPM limited error: {e}, waiting for 60 seconds.")
                 time.sleep(60)
-                return None
+                return None, str(e)
+            elif "system is too busy now" in str(e).lower():
+                logging.error(f"System busy error: {e}, waiting for 60 seconds.")
+                time.sleep(60)
+                return None, str(e)
             else:
                 logging.error(f"Error processing response: {e}")
-                return None
+                return None, str(e)
 
     def get_response(self, prompt, history=None):
         """
@@ -79,12 +84,22 @@ class ChatGPT:
                 history = history[1:]
             messages = [{"role": "system", "content": self.system_prompt}] + history + \
                        [{"role": "user", "content": prompt}]
-        response = self.chat(messages)
+        response, err_msg = self.chat(messages)
         if response is None:
-            logging.error("No response received from API")
+            logging.error(f"No response received from API with error: {err_msg}")
             logging.info("Trying again in 5 seconds...")
             time.sleep(5)
-            response = self.chat(messages)
+            index = 0
+            repeat_limit = self.error_retry
+            response, err_msg = self.chat(messages)
+            while response is None and index < repeat_limit:
+                logging.info(f"Retrying {index + 1}/{repeat_limit}...")
+                logging.error(f"No response received from API with error: {err_msg}")
+                delay_seconds = min(1800, 5 * (2 ** index))  # Exponential backoff with a max of 30 minutes
+                logging.info(f"Retrying in {delay_seconds} seconds...")
+                time.sleep(delay_seconds)
+                response, err_msg = self.chat(messages)
+                index += 1
             if response is None:
                 logging.error("Failed to get a response after retrying.")
                 return None

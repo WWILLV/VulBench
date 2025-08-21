@@ -12,6 +12,7 @@ LLM:
   base_url: "" # Base URL for LLM API
   model: "" # Model name
   api_key: "" # Your LLM API key
+  error_retry: 10 # Number of retries for error handling
   stream: false # Set to true if you want to stream the response
   temperature: 0.6 # Temperature for response generation
   top_p: 0.9 # Top-p for response generation
